@@ -67,7 +67,8 @@ esac
 # ── [2/5] Prompts (universal) ─────────────────────────────────
 echo "[2/5] Prompts..."
 mkdir -p prompts
-for p in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight assess-capabilities adopt-harness; do
+for p in adopt-harness adr assess-capabilities audit cost-review diagnose grill-me \
+         learn memorize preflight risk-review security-scan sparc subagent tdd to-issues zoom-out; do
   fetch "prompts/${p}.md" > "prompts/${p}.md"
 done
 
@@ -116,7 +117,8 @@ fetch_skills() {  # discovery skill (Claude Code & Codex both support skills)
 
 setup_claude_runtime() {
   mkdir -p .claude/commands
-  for c in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight assess-capabilities adopt-harness sparc adr memorize learn audit risk-review subagent cost-review; do
+  for c in adopt-harness adr assess-capabilities audit cost-review diagnose grill-me \
+           learn memorize preflight risk-review security-scan sparc subagent tdd to-issues zoom-out; do
     fetch ".claude/commands/${c}.md" > ".claude/commands/${c}.md"
   done
   fetch_hooks
@@ -124,9 +126,29 @@ setup_claude_runtime() {
   fetch_safe ".claude/settings.json" ".claude/settings.json"
   if command -v claude >/dev/null 2>&1; then
     echo "  installing Claude plugins..."
-    for plugin in obra/superpowers mattpocock/skills vercel-labs/agent-skills anthropics/skills trailofbits/skills; do
-      if claude plugin install "$plugin" >/dev/null 2>&1; then echo "    ✓ $plugin"; else echo "    ✗ $plugin"; PLUGIN_FAILED+=("$plugin"); fi
+    # Claude CLI requires a two-step flow: add the marketplace, then install
+    # plugin@marketplace. The marketplace name is set inside each repo's
+    # .claude-plugin/marketplace.json (not derivable from the GitHub slug),
+    # so we hardcode <github-repo>:<marketplace-name>:<plugin-name> tuples.
+    for entry in \
+      "JuliusBrussee/caveman:caveman:caveman" \
+      "obra/superpowers:superpowers-dev:superpowers" \
+      "anthropics/skills:anthropic-agent-skills:claude-api" \
+      "anthropics/skills:anthropic-agent-skills:document-skills"; do
+      IFS=':' read -r repo market plugin <<< "$entry"
+      claude plugin marketplace add "$repo" >/dev/null 2>&1 || true
+      if claude plugin install "${plugin}@${market}" >/dev/null 2>&1; then
+        echo "    ✓ ${plugin}@${market}"
+      else
+        echo "    ✗ ${plugin}@${market}"
+        PLUGIN_FAILED+=("${plugin}@${market}")
+      fi
     done
+    # Trailofbits has ~19 security plugins — add the marketplace so users can
+    # pick what they need, rather than installing the whole pack.
+    if claude plugin marketplace add trailofbits/skills >/dev/null 2>&1; then
+      echo "    ✓ trailofbits marketplace added (install via: claude plugin install <name>@trailofbits)"
+    fi
   else
     echo "  claude CLI not found — skipping plugins (rules+prompts+hooks still active)"
   fi
