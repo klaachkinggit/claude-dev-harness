@@ -1,85 +1,83 @@
 # claude-dev-harness
 
-Model-agnostic base harness for AI-assisted software development. Works with Claude Code, Cursor, Windsurf, Gemini CLI, GitHub Copilot, Cline, and any other tool. Clone for every project, extend per-project at the bottom of the rules file.
+Model-agnostic harness for AI-assisted software development. Works with Claude Code, Cursor, Windsurf, Gemini CLI, GitHub Copilot, Cline, and any other tool.
 
-## Compatibility
+**Intended use:** point any AI agent at this repo and it self-installs into your project. See [APPLY.md](APPLY.md) for the full agent-facing setup guide.
 
-| Tool | Rules file | MCP | Prompts |
-|------|-----------|-----|---------|
-| Claude Code | `CLAUDE.md` (auto) | `claude mcp add` + plugins | `.claude/commands/` slash commands |
-| Cursor | `.cursorrules` + `.cursor/rules/` (auto) | `.mcp.json` | `prompts/` |
-| Windsurf | `.windsurfules` (auto) | `.mcp.json` | `prompts/` |
-| Gemini CLI | `GEMINI.md` (auto) | `.mcp.json` | `prompts/` |
-| GitHub Copilot | `.github/copilot-instructions.md` (auto) | VS Code MCP extension | `prompts/` |
-| Cline | `.clinerules` (auto) | `.mcp.json` | `prompts/` |
-| Other | Copy `RULES.md` into system prompt | `.mcp.json` | `prompts/` |
+## Quick apply
+
+```bash
+# Claude Code
+TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
+
+# Cursor
+TOOL=cursor bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
+
+# All tools at once
+TOOL=all bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
+```
 
 ## What's included
 
 ### Behavioral rules
-One canonical source (`RULES.md`) — Karpathy's 3 foundational LLM coding rules + engineering discipline. Auto-populated into every tool's expected file. No config needed.
+Canonical source: `RULES.md` → synced to all tool files via `sync-rules.sh`.
 
-### MCP Servers (`.mcp.json`)
+| Tool | Auto-loaded file |
+|------|-----------------|
+| Claude Code | `CLAUDE.md` |
+| Cursor | `.cursorrules` + `.cursor/rules/harness.mdc` |
+| Windsurf | `.windsurfules` |
+| Gemini CLI | `GEMINI.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cline | `.clinerules` |
+| Other | Copy `RULES.md` into system prompt |
+
+### MCP servers (`.mcp.json` — cross-platform)
 | Server | Purpose |
 |--------|---------|
 | `github` | Repo, PR, issue management |
 | `filesystem` | Project file access |
 | `git` | History, diff, blame, commit ops |
-| `playwright` | Browser automation + E2E (Microsoft official) |
+| `playwright` | Browser automation + E2E |
 | `db` | PostgreSQL — optional, set `DATABASE_URL` |
 
-### Plugins (Claude Code only, via `install.sh`)
+### Plugins (Claude Code — installed by `apply.sh`)
 | Plugin | Purpose |
 |--------|---------|
 | `obra/superpowers` | 7-phase production dev methodology, TDD-enforced |
 | `mattpocock/skills` | Engineering discipline — /grill-me, /tdd, /diagnose, /zoom-out |
-| `vercel-labs/agent-skills` | 100+ UI/a11y/perf rules (133K weekly installs) |
-| `anthropics/skills` | Frontend design direction + Word/PDF/Excel generation |
+| `vercel-labs/agent-skills` | 100+ UI/a11y/perf rules |
+| `anthropics/skills` | Frontend design + document generation |
 | `trailofbits/skills` | Security scanning (CodeQL + Semgrep) |
 | `JuliusBrussee/caveman` | 65–75% token reduction |
 
+### Hooks (Claude Code — `.claude/hooks/`)
+| Script | Trigger | What it does |
+|--------|---------|-------------|
+| `protect-secrets.sh` | PreToolUse Read/Write/Edit | Blocks access to `.env`, `.pem`, `.key`, credentials |
+| `block-dangerous.sh` | PreToolUse Bash | Blocks `rm -rf /`, `curl\|bash`, force-push main, fork bombs |
+| `log-bash.sh` | PreToolUse Bash | Appends every command to `.claude/bash.log` |
+| `auto-format.sh` | PostToolUse Edit/Write | Runs prettier/black/ruff/gofmt if installed |
+| `pre-pr-gate.sh` | PreToolUse create_pull_request | Blocks PR if tests fail |
+| Done notification | Stop | macOS notification or terminal bell |
+
 ### Universal prompts (`prompts/`)
-Paste into any AI tool — no tool-specific syntax.
+Paste into any tool — no tool-specific syntax.
 
 | Prompt | When to use |
 |--------|-------------|
-| `grill-me.md` | Before any large implementation — exhaustive requirements interview |
+| `grill-me.md` | Before any large implementation |
 | `tdd.md` | Enforce RED-GREEN-REFACTOR |
-| `diagnose.md` | Structured 8-step debugging, no guess-fixing |
-| `to-issues.md` | Convert PRD/plan → vertically-sliced GitHub issues |
-| `zoom-out.md` | System map before touching unfamiliar code |
-| `handoff.md` | Compact session → `HANDOFF.md` for continuation |
-| `security-scan.md` | OWASP Top 10 + secrets exposure check |
-| `preflight.md` | Pre-ship checklist before every PR or deploy |
-
-### Claude Code slash commands (`.claude/commands/`)
-Same prompts wired as `/grill-me`, `/tdd`, `/diagnose`, etc. — auto-available in Claude Code sessions.
-
-## Setup
-
-### New project from this harness
-
-```bash
-# Use as GitHub template (recommended)
-gh repo create my-project --template klaachkinggit/claude-dev-harness --clone
-cd my-project
-./install.sh
-```
-
-### Install for your tool
-
-```bash
-chmod +x install.sh
-./install.sh
-# Select your tool from the menu
-
-# With database:
-DATABASE_URL="postgresql://user:pass@host:5432/db" ./install.sh
-```
+| `diagnose.md` | Structured 8-step debugging |
+| `to-issues.md` | PRD/plan → vertically-sliced GitHub issues |
+| `zoom-out.md` | System map before unfamiliar code |
+| `handoff.md` | Compact session → HANDOFF.md |
+| `security-scan.md` | OWASP Top 10 + secrets check |
+| `preflight.md` | Pre-ship checklist |
 
 ## Per-project customization
 
-Add project rules at the bottom of your tool's rules file (e.g., `CLAUDE.md`, `.cursorrules`):
+Add at the bottom of your rules file (below the `<!-- Add project-specific rules -->` line):
 
 ```markdown
 ## Project: my-app
@@ -87,13 +85,22 @@ Add project rules at the bottom of your tool's rules file (e.g., `CLAUDE.md`, `.
 - Stack: Next.js 14, Prisma, PostgreSQL
 - Test runner: vitest — `npm test`
 - Lint: eslint + prettier — `npm run lint`
-- Deploy: Vercel — use CI, never deploy from local
+- Deploy: Vercel, CI only — never deploy from local
 - Schema changes require a migration file in `prisma/migrations/`
 ```
 
-## Principles
+## Maintaining rules
 
-1. Pick one prompt, learn it, add the next. Don't overwhelm the context.
-2. Extend rules at the bottom — never delete foundational rules.
-3. Review any hooks before enabling — they run with your credentials.
-4. `grill-me` before any non-trivial implementation. Slow down to go fast.
+When you update `RULES.md`, sync all tool files:
+```bash
+./sync-rules.sh
+```
+`CLAUDE.md` is not synced — it has extra Claude-specific content. Update manually if needed.
+
+## Environment variables
+
+Copy `.env.example` → `.env`:
+```
+GITHUB_TOKEN=ghp_...          # required for GitHub MCP
+DATABASE_URL=postgresql://... # optional, enables db MCP
+```

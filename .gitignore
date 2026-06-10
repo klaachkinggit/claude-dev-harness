@@ -27,4 +27,8 @@ Thumbs.db
 
 # Claude session files
 .claude/projects/
+.claude/bash.log
 HANDOFF.md
+
+# Secrets
+.env
