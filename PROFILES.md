@@ -8,6 +8,25 @@ context whether you use them or not.
 When you start a project, pull only the pack(s) that project needs. Use the
 discovery skill or the direct install commands below.
 
+## Capability matrix (what's in the base, where to extend)
+
+| Capability | In base | Extend via |
+|------------|---------|------------|
+| Behavioral contract | `RULES.md` synced to every tool | edit `RULES.md` only; `./sync-rules.sh` |
+| Enforcement (boundary) | `.githooks/`, `.github/workflows/ci.yml` | add jobs to CI |
+| Runtime safety (Claude/Codex) | `.claude/hooks/` (secrets, dangerous bash, format) | add hooks in `.claude/hooks/` |
+| Skill discovery | `find-skills` | profiles below |
+| Token discipline | Lean-skills rule (HARNESS.md:72), `/compact`, **model-tier routing in `prompts/subagent.md`** (Haiku/Sonnet/Opus), `/cost-review` | — (see "Don't install" below) |
+| Subagent delegation | `prompts/subagent.md` — when to spawn + which model tier | — (model-agnostic guidance, no runtime) |
+| Cross-session memory | `MEMORY.md` + `prompts/memorize.md` | append entries; archive quarterly |
+| Self-learning (heuristics) | `LESSONS.md` + `prompts/learn.md` | append only non-obvious lessons with a usable "next time" rule |
+| Architecture decisions | `docs/adr/` + `prompts/adr.md` + template | one ADR per hard-to-reverse choice |
+| Methodology | `prompts/sparc.md` (5-phase) + Superpowers (plugin) | swap workflow skills, don't stack |
+| Risk classification | `prompts/risk-review.md` (per-diff dimension scoring) | run before `/preflight` on auth/data/infra changes |
+| Periodic checks | `prompts/audit.md` (manual / on cadence) | wire to scheduled CI if needed |
+| MCP base | github, filesystem, git, playwright, db | stack-specific table below |
+| Plugins base | superpowers, mattpocock, vercel-labs, anthropics, trailofbits | stack-specific table below |
+
 ## How this differs from `find-skills`
 - **`find-skills` = discovery.** Live, ranked-by-installs search of the skills.sh
   registry. Use it to find *what exists* for a need.
@@ -142,7 +161,7 @@ community one needs `/plugin marketplace add anthropics/claude-plugins-community
 
 **Already in the base plugins — don't re-add:** `obra/superpowers`,
 `mattpocock/skills`, `vercel-labs/agent-skills`, `anthropics/skills`,
-`trailofbits/skills`, `JuliusBrussee/caveman`.
+`trailofbits/skills`.
 
 ## Project workflow — run exactly ONE
 

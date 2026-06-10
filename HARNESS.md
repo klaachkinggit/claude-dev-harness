@@ -69,7 +69,9 @@ Shared scripts in `.claude/hooks/` read the tool-call as JSON on stdin, exit `2`
 This is *why* the harness is model-agnostic on enforcement: the guarantees hold at git/CI regardless of which agent (or human) wrote the code.
 
 ## Skills — lean on purpose
-Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles only `caveman` (tokens) + `find-skills` (installs any other skill on demand). Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
+Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles only `find-skills` (installs any other skill on demand). Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
+
+Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
 
 ## Prompts
 `prompts/*.md` — plain markdown, paste anywhere; or `/slash` commands in Claude/Codex (Codex: drop into `~/.codex/prompts/`). List in README.

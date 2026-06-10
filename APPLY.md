@@ -5,11 +5,11 @@
 ## Apply (from the project root)
 ```bash
 # TOOL = claude | codex | cursor | windsurf | gemini | copilot | cline | all
-TOOL=<your-tool> bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
+TOOL=<your-tool> bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 ```
 Tool not listed → `TOOL=all`, then read [HARNESS.md](HARNESS.md) to finish wiring it up.
 
-No curl? `gh repo clone klaachkinggit/claude-dev-harness /tmp/harness` and copy the files you need.
+No curl? `gh repo clone klaachkinggit/klaach_harness /tmp/harness` and copy the files you need.
 
 ## What gets applied
 | Component | Where | Who reads it |
@@ -20,7 +20,7 @@ No curl? `gh repo clone klaachkinggit/claude-dev-harness /tmp/harness` and copy 
 | Git hooks + CI | `.githooks/`, `.github/workflows/ci.yml` | git / GitHub — any tool or human |
 | Slash commands | `.claude/commands/` | Claude Code |
 | Runtime hooks | `.claude/hooks/` + `.claude/settings.json` (Claude) / `.codex/hooks.json` (Codex) | Claude Code, Codex |
-| Skills | `.claude/skills/` (caveman, find-skills) | Claude Code, Codex |
+| Skills | `.claude/skills/` (find-skills) | Claude Code, Codex |
 
 ## After applying — VERIFY (don't skip)
 Setup can fail partially (missing token, network, CLI mismatch). `apply.sh` prints a `⚠️ FAILED` block if so — read it. Then:

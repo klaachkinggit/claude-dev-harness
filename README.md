@@ -1,4 +1,4 @@
-# claude-dev-harness
+# klaach_harness
 
 Model-agnostic harness for AI-assisted software dev. Works with Claude Code, Codex CLI, Cursor, Windsurf, Gemini CLI, Copilot, Cline, and any future tool.
 
@@ -10,7 +10,7 @@ Model-agnostic harness for AI-assisted software dev. Works with Claude Code, Cod
 
 ```bash
 # TOOL = claude | codex | cursor | windsurf | gemini | copilot | cline | all
-TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
+TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 ```
 
 ## What's included
@@ -35,7 +35,7 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/cl
 Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` / `.cursor/mcp.json` / `.codex/config.toml`). Stack-specific servers → [PROFILES.md](PROFILES.md).
 
 ### Plugins (Claude Code — installed by `apply.sh`)
-`obra/superpowers` (workflow), `mattpocock/skills` (engineering discipline), `vercel-labs/agent-skills` (UI/perf), `anthropics/skills` (design + docs), `trailofbits/skills` (security), `JuliusBrussee/caveman` (tokens).
+`obra/superpowers` (workflow), `mattpocock/skills` (engineering discipline), `vercel-labs/agent-skills` (UI/perf), `anthropics/skills` (design + docs), `trailofbits/skills` (security).
 
 ### Hooks (Claude Code & Codex — `.claude/hooks/`)
 | Script | Trigger | Does |
@@ -48,10 +48,15 @@ Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATA
 | done-notify | Stop | macOS notification / terminal bell |
 
 ### Skills (lean by design)
-Base bundles only `caveman` (tokens) + `find-skills` (discovers/installs any other skill on demand). Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal.
+Base bundles only `find-skills` (discovers/installs any other skill on demand). Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal. Token discipline comes from model-tier routing (`prompts/subagent.md`), `/compact`, and `/cost-review` — not from output-compression skills.
 
 ### Prompts (`prompts/` — paste into any tool)
-`grill-me` (requirements interview), `tdd` (RED-GREEN-REFACTOR), `diagnose` (8-step debug), `to-issues` (plan → issues), `zoom-out` (system map), `handoff` (session → HANDOFF.md), `security-scan` (OWASP + secrets), `preflight` (pre-ship checklist), `assess-capabilities` (acquire skills/MCP/plugins for a project/feature), `adopt-harness` (adopt into existing project + clean up). Claude/Codex get the same as `/slash` commands.
+`grill-me` (requirements interview), `sparc` (5-phase build), `tdd` (RED-GREEN-REFACTOR), `diagnose` (8-step debug), `to-issues` (plan → issues), `zoom-out` (system map), `handoff` (session → HANDOFF.md), `security-scan` (OWASP + secrets + PII), `risk-review` (diff risk classifier), `preflight` (pre-ship checklist), `audit` (periodic repo health), `adr` (architecture decision record), `memorize` (append to `MEMORY.md`), `learn` (append to `LESSONS.md`), `subagent` (when to delegate + Haiku/Sonnet/Opus tier routing), `cost-review` (token/spend check), `assess-capabilities` (acquire skills/MCP/plugins for a project/feature), `adopt-harness` (adopt into existing project + clean up). Claude/Codex get the same as `/slash` commands.
+
+### Memory, decisions & learning
+- `MEMORY.md` — append-only cross-session memory (state of the world). See `prompts/memorize.md`.
+- `LESSONS.md` — append-only heuristics learned (what to do next time). See `prompts/learn.md`. Together these are the portable "self-learning" loop: read at session start, append when something non-obvious happens. No daemon, no vector DB.
+- `docs/adr/` — architecture decision records (template at `0000-template.md`, write via `prompts/adr.md`).
 
 ## Per-project customization
 Append below the `<!-- Add project-specific rules -->` line in your rules file:

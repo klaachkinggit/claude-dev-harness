@@ -2,7 +2,7 @@
 # Apply this harness to any project, from any AI agent.
 #
 # Usage (run from your project root):
-#   bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 #
 # Non-interactive (for agents):
 #   TOOL=claude|codex|cursor|windsurf|gemini|copilot|cline|all  bash <(curl -fsSL .../apply.sh)
@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-REPO="klaachkinggit/claude-dev-harness"
+REPO="klaachkinggit/klaach_harness"
 RAW="https://raw.githubusercontent.com/${REPO}/main"
 
 echo "=== Dev Harness — Apply ==="
@@ -109,15 +109,14 @@ fi
 echo "[5/5] Runtime extras..."
 PLUGIN_FAILED=()
 
-fetch_skills() {  # discovery + token-saver skills (Claude Code & Codex both support skills)
-  mkdir -p .claude/skills/caveman .claude/skills/find-skills
-  fetch ".claude/skills/caveman/SKILL.md" > .claude/skills/caveman/SKILL.md
+fetch_skills() {  # discovery skill (Claude Code & Codex both support skills)
+  mkdir -p .claude/skills/find-skills
   fetch ".claude/skills/find-skills/SKILL.md" > .claude/skills/find-skills/SKILL.md
 }
 
 setup_claude_runtime() {
   mkdir -p .claude/commands
-  for c in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight assess-capabilities adopt-harness; do
+  for c in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight assess-capabilities adopt-harness sparc adr memorize learn audit risk-review subagent cost-review; do
     fetch ".claude/commands/${c}.md" > ".claude/commands/${c}.md"
   done
   fetch_hooks
@@ -125,7 +124,7 @@ setup_claude_runtime() {
   fetch_safe ".claude/settings.json" ".claude/settings.json"
   if command -v claude >/dev/null 2>&1; then
     echo "  installing Claude plugins..."
-    for plugin in obra/superpowers mattpocock/skills vercel-labs/agent-skills anthropics/skills trailofbits/skills JuliusBrussee/caveman; do
+    for plugin in obra/superpowers mattpocock/skills vercel-labs/agent-skills anthropics/skills trailofbits/skills; do
       if claude plugin install "$plugin" >/dev/null 2>&1; then echo "    ✓ $plugin"; else echo "    ✗ $plugin"; PLUGIN_FAILED+=("$plugin"); fi
     done
   else
