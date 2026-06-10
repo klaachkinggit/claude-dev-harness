@@ -69,6 +69,35 @@ For projects that themselves build LLM agents.
 | mcp-builder | `anthropics/skills@mcp-builder` | Build MCP servers |
 | context-engineering | `muratcankoylan/Agent-Skills-for-Context-Engineering` | Context/prompt patterns (redundant with this harness for non-agent projects) |
 
+## Project workflow — run exactly ONE
+
+A "workflow" skill structures how the agent plans and implements. The base ships
+**Superpowers** (`obra/superpowers`, installed by apply.sh) — the most-endorsed
+option in the community. Do **not** run two workflow skills at once; they fight
+over the same job. Swap, don't stack:
+
+| Skill | Source | Fits |
+|-------|--------|------|
+| Superpowers *(default, in base)* | `obra/superpowers` | Small–medium, well-defined work; strong brainstorming → plan → execute |
+| OpenSpec | `Fission-AI/OpenSpec` | Lightweight spec-driven build + rollback |
+| GSD (Get-Shit-Done) | `gsd-build/get-shit-done` | Large, iterative projects; phased with heavy safety gates; `/gsd:map-codebase` onboarding |
+
+Common pairing from the community: `grill-me` (pressure-test the idea) → workflow
+skill (brainstorm → plan → implement). Both are compatible because grill-me is a
+helper, not a workflow.
+
+### Cross-runtime peer review (Claude + Codex)
+You use both Claude Code and Codex — a community-endorsed pattern: have one build,
+the other review. Different models catch different failure modes. No package needed;
+just run `/review` (or paste the diff) in the *other* tool before merging.
+
+## Skill hygiene (community-validated)
+- One workflow skill at a time; small composable helpers around it.
+- A skill's value is its **validators, hard-stops, and scripts** — not its prose.
+  (This harness puts those at the git/CI layer so they hold under any tool.)
+- Auto-updating skills is risky — a mutation can regress quietly. Keep stable skills frozen.
+- Stale instruction files perform *worse* than none. Prune skills you haven't used in ~2 weeks.
+
 ## Rule of thumb
 
 Audit every couple of weeks: for each installed skill, *did I use it?* If not,

@@ -35,3 +35,8 @@ HANDOFF.md
 
 # apply.sh backups
 *.bak
+
+# scratch / research artifacts
+reddit.json
+reddit-comments.txt
+500
