@@ -15,6 +15,8 @@ Security scan of $ARGUMENTS. Check each category and report all findings.
 6. **Input validation** — All system boundary inputs (user input, external APIs) validated and sanitized?
 7. **Dependencies** — Run `npm audit --audit-level=high` or `pip audit` if applicable.
 8. **Cryptography** — Weak hashing (MD5/SHA1 for passwords), missing TLS, weak random for tokens?
+9. **PII exposure** — Emails, phones, SSN/IDs, addresses, financial identifiers leaking into logs, error messages, analytics, URLs, or 3rd-party telemetry:
+   `grep -rnE "log[^\n]*\b(email|phone|ssn|address|dob|iban|card)" $ARGUMENTS`
 
 Report format: `[SEVERITY] file:line — description — fix`
 Severity: CRITICAL | HIGH | MEDIUM | LOW
