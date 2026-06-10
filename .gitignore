@@ -29,6 +29,7 @@ Thumbs.db
 .claude/projects/
 .claude/bash.log
 HANDOFF.md
+MEMORY.md
 
 # Secrets
 .env
