@@ -109,14 +109,20 @@ fi
 echo "[5/5] Runtime extras..."
 PLUGIN_FAILED=()
 
+fetch_skills() {  # discovery + token-saver skills (Claude Code & Codex both support skills)
+  mkdir -p .claude/skills/caveman .claude/skills/find-skills
+  fetch ".claude/skills/caveman/SKILL.md" > .claude/skills/caveman/SKILL.md
+  fetch ".claude/skills/find-skills/SKILL.md" > .claude/skills/find-skills/SKILL.md
+}
+
 setup_claude_runtime() {
-  mkdir -p .claude/commands .claude/skills/caveman
+  mkdir -p .claude/commands
   for c in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight; do
     fetch ".claude/commands/${c}.md" > ".claude/commands/${c}.md"
   done
   fetch_hooks
+  fetch_skills
   fetch_safe ".claude/settings.json" ".claude/settings.json"
-  fetch ".claude/skills/caveman/SKILL.md" > .claude/skills/caveman/SKILL.md
   if command -v claude >/dev/null 2>&1; then
     echo "  installing Claude plugins..."
     for plugin in obra/superpowers mattpocock/skills vercel-labs/agent-skills anthropics/skills trailofbits/skills JuliusBrussee/caveman; do
@@ -129,6 +135,7 @@ setup_claude_runtime() {
 
 setup_codex_runtime() {
   fetch_hooks                                   # Codex hooks reuse the same scripts
+  fetch_skills                                  # Codex supports skills too
   fetch_safe ".codex/hooks.json" ".codex/hooks.json"
   echo "  Codex hooks written to .codex/hooks.json (reuses .claude/hooks/ scripts)."
   echo "  VERIFY hook stdin field names match your Codex version — see HARNESS.md."
@@ -145,6 +152,7 @@ esac
 echo ""
 echo "=== Done ==="
 echo "Next: copy .env.example → .env (set GITHUB_TOKEN); add project rules at the bottom of your rules file."
+echo "Skills: base is lean. Need more (web/docs/etc)? Ask agent to 'find a skill for X' or see PROFILES.md."
 echo "Unknown/!listed tool? Read HARNESS.md — it maps every layer to your tool's mechanism."
 
 if [ ${#PLUGIN_FAILED[@]} -gt 0 ]; then

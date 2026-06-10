@@ -41,6 +41,9 @@ Canonical source: `RULES.md` → synced to all tool files via `sync-rules.sh`.
 - `.github/workflows/ci.yml` — secret scan + lint + test on GitHub push/PR
 - Activated by `apply.sh` via `git config core.hooksPath .githooks`
 
+### Skills (lean by design)
+The base bundles only `caveman` (token reduction) and `find-skills` (discovers + installs any other skill on demand). Niche skills (web, docs, scraping, animation) are **per-project** — see [PROFILES.md](PROFILES.md). Why: skill descriptions tax every session's context, so a base used by all projects must stay minimal.
+
 ### MCP servers (per-tool config via `tools/gen-mcp.py`)
 Generates the right format/path per tool (`.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, …).
 | Server | Purpose |

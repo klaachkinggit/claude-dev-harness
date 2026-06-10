@@ -93,6 +93,18 @@ though hooks/plugins/slash-commands aren't: the *guarantees* (no secrets, code
 formatted, tests pass) hold at the git/CI layer regardless of which agent wrote
 the code — Claude, Codex, a tool released next year, or a human.
 
+## Skills — kept lean on purpose
+
+Skill descriptions load into context every session; past ~1% of the context
+window they get truncated and mis-activate. So the base bundles only:
+- `caveman` — token reduction
+- `find-skills` — discovers + installs any other skill on demand (`npx skills find`)
+
+Everything else is **per-project**, not in the base. To add a skill pack for a
+specific project (web, reporting, scraping, …) see **PROFILES.md**, or just ask
+the agent *"find a skill for X"* (that triggers `find-skills`). Audit installed
+skills periodically: if you haven't used one in two weeks, remove it.
+
 ## Prompts — workflow templates (universal)
 
 `prompts/*.md` are plain markdown. Paste into any tool, or invoke as slash
