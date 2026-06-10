@@ -67,7 +67,7 @@ esac
 # ── [2/5] Prompts (universal) ─────────────────────────────────
 echo "[2/5] Prompts..."
 mkdir -p prompts
-for p in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight; do
+for p in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight assess-skills adopt-harness; do
   fetch "prompts/${p}.md" > "prompts/${p}.md"
 done
 
@@ -117,7 +117,7 @@ fetch_skills() {  # discovery + token-saver skills (Claude Code & Codex both sup
 
 setup_claude_runtime() {
   mkdir -p .claude/commands
-  for c in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight; do
+  for c in grill-me tdd diagnose to-issues zoom-out handoff security-scan preflight assess-skills adopt-harness; do
     fetch ".claude/commands/${c}.md" > ".claude/commands/${c}.md"
   done
   fetch_hooks

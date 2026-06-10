@@ -18,6 +18,7 @@
 - No security vulnerabilities: SQL injection, XSS, command injection, hardcoded secrets.
 
 ## Workflow
+- Before any non-trivial feature, assess whether a skill would help (`prompts/assess-skills.md` / `find-skills`); vet and install before building. Never add what the base already covers.
 - Use `prompts/grill-me.md` before any large implementation — uncover all decision branches first.
 - Failing test before implementation on any non-trivial change.
 - Use `prompts/security-scan.md` on any auth, data persistence, or infra change.

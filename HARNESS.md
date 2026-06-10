@@ -120,6 +120,8 @@ commands where supported (Claude: `/grill-me`; Codex: drop into `~/.codex/prompt
 | `handoff` | Compact session → HANDOFF.md |
 | `security-scan` | OWASP Top 10 + secrets |
 | `preflight` | Pre-ship checklist |
+| `assess-skills` | Assess + install the skills a project/feature needs (drives find-skills) |
+| `adopt-harness` | Adopt harness into an existing project + clean up its skills |
 
 ## If you're a brand-new tool with none of these mechanisms
 
