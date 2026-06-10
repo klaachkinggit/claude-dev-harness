@@ -8,6 +8,30 @@ context whether you use them or not.
 When you start a project, pull only the pack(s) that project needs. Use the
 discovery skill or the direct install commands below.
 
+## How this differs from `find-skills`
+- **`find-skills` = discovery.** Live, ranked-by-installs search of the skills.sh
+  registry. Use it to find *what exists* for a need.
+- **This file = judgment.** What a leaderboard can't tell you: which skills
+  **conflict** with the base, licensing/paid-API traps, and — most useful — the
+  **"don't install" list** below. Curated, so it can go stale: treat it as a
+  starting point, re-vet picks periodically, and prefer `find-skills` for current
+  rankings.
+
+## Don't install — the base already covers these
+Adding these duplicates harness functionality and just taxes context. (Verified
+against the r/ClaudeAI "best skills" thread + the harness's own layers.)
+
+| If tempted to add… | Use instead (already in base) |
+|--------------------|-------------------------------|
+| a custom debug/root-cause skill (e.g. myclaude `dendrite`, `five-vitals`) | `diagnose`, `zoom-out` |
+| a commit gate / secret scanner / formatter skill | the git hooks (`.githooks/`) + `security-scan` |
+| a session-close / handoff skill (e.g. `/close`, Cabinet `handoff`) | `handoff` |
+| an issue-creation / spec skill (Matt Pocock "QA Session") | `to-issues`, `grill-me` |
+| caveman-style "token saver" skills | nothing — thread consensus: trims output only, not thinking ("meme skill") |
+| context-engineering kits | redundant unless the *project itself* builds LLM agents |
+| self-mutating / auto-tuning meta-skills (e.g. one-skill-to-rule-them-all) | overlaps harness hooks/memory; thread warns auto-mutation regresses quietly |
+| a second workflow skill alongside Superpowers | swap, don't stack (see "Project workflow") |
+
 ## How to add skills to a project
 
 **Via the discovery skill (any tool that supports skills):**
@@ -34,6 +58,7 @@ For projects with a browser UI.
 | ui-ux-pro-max | `nextlevelbuilder/ui-ux-pro-max-skill` | Design systems, color/font/layout reasoning |
 | vercel agent-skills | `vercel-labs/agent-skills` | React/Next.js best practices, 100+ a11y/perf/UX rules |
 | frontend-design | `anthropics/skills@frontend-design` | Sets bold design direction before coding |
+| awesome-design-skills | `bergside/awesome-design-skills` | 57 visual-style skills (Neumorphism, Flat, Skeuomorphic…), MIT — add only the *one* style you're building in, not all 57 |
 
 > Note: the base already includes a **Playwright MCP** server. `webapp-testing`
 > is a workflow layer on top — add it only if MCP-level browser control isn't enough.
