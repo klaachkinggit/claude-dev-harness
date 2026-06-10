@@ -13,11 +13,13 @@ except Exception:
 [ -z "$CMD" ] && exit 0
 
 # Parallel arrays — index i pairs DESCS[i] with REGEXES[i].
+# Catastrophic rm = RECURSIVE (-r/-R) on a critical target. Non-recursive rm of a
+# specific file (even by absolute path) is NOT blocked — that's a normal operation.
 DESCS=(
-  "rm -rf targeting root/absolute path"
-  "rm -rf targeting home"
-  "rm -rf targeting current/parent dir"
-  "rm -rf with glob"
+  "recursive rm of root"
+  "recursive rm of home"
+  "recursive rm of current/parent dir"
+  "recursive rm with bare glob"
   "sudo rm"
   "fork bomb"
   "chmod 777"
@@ -28,10 +30,10 @@ DESCS=(
   "force push to main/master"
 )
 REGEXES=(
-  'rm[[:space:]]+-[a-zA-Z]*[rRfF][a-zA-Z]*[[:space:]]+/'
-  'rm[[:space:]]+-[a-zA-Z]*[rRfF][a-zA-Z]*[[:space:]]+(~|\$HOME)'
-  'rm[[:space:]]+-[a-zA-Z]*[rRfF][a-zA-Z]*[[:space:]]+\.\.?/?([[:space:]]|$)'
-  'rm[[:space:]]+-[a-zA-Z]*[rRfF][a-zA-Z]*[[:space:]]+\*'
+  'rm[[:space:]]+-[a-zA-Z]*[rR][a-zA-Z]*[[:space:]]+/([[:space:]]|$|\*)'
+  'rm[[:space:]]+-[a-zA-Z]*[rR][a-zA-Z]*[[:space:]]+(~|\$HOME)([[:space:]]|/|$)'
+  'rm[[:space:]]+-[a-zA-Z]*[rR][a-zA-Z]*[[:space:]]+\.\.?/?([[:space:]]|$)'
+  'rm[[:space:]]+-[a-zA-Z]*[rR][a-zA-Z]*[[:space:]]+\*([[:space:]]|$)'
   'sudo[[:space:]]+rm'
   ':\(\)[[:space:]]*\{'
   'chmod[[:space:]]+[0-9]*777'

@@ -10,7 +10,9 @@ Run from the project root:
 TOOL=<your-tool> bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claude-dev-harness/main/apply.sh)
 ```
 
-Replace `<your-tool>` with one of: `claude` | `cursor` | `windsurf` | `gemini` | `copilot` | `cline` | `all`
+Replace `<your-tool>` with one of: `claude` | `codex` | `cursor` | `windsurf` | `gemini` | `copilot` | `cline` | `all`
+
+> Tool not listed? Use `TOOL=all`, then read [HARNESS.md](HARNESS.md) — it maps every layer to your tool's mechanism so you can finish wiring it up.
 
 **Examples:**
 ```bash

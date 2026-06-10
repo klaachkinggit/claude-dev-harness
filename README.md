@@ -1,8 +1,10 @@
 # claude-dev-harness
 
-Model-agnostic harness for AI-assisted software development. Works with Claude Code, Cursor, Windsurf, Gemini CLI, GitHub Copilot, Cline, and any other tool.
+Model-agnostic harness for AI-assisted software development. Works with Claude Code, Codex CLI, Cursor, Windsurf, Gemini CLI, GitHub Copilot, Cline, and any future tool.
 
-**Intended use:** point any AI agent at this repo and it self-installs into your project. See [APPLY.md](APPLY.md) for the full agent-facing setup guide.
+**Intended use:** point any AI agent at this repo and it self-installs into your project. See [APPLY.md](APPLY.md) for setup and [HARNESS.md](HARNESS.md) for the agent-facing capability map (how each layer maps to your tool — read this if your tool isn't explicitly supported).
+
+**How "model-agnostic" actually works:** rules + prompts are universal; MCP config is generated per-tool; and all *enforcement* (no secrets, formatted code, passing tests) lives at the **git + CI layer**, so the guarantees hold no matter which agent — or human — writes the code. Runtime hooks (Claude Code + Codex) are a faster copy of the same checks. Full breakdown in [HARNESS.md](HARNESS.md).
 
 ## Quick apply
 
@@ -25,6 +27,7 @@ Canonical source: `RULES.md` → synced to all tool files via `sync-rules.sh`.
 | Tool | Auto-loaded file |
 |------|-----------------|
 | Claude Code | `CLAUDE.md` |
+| Codex CLI | `AGENTS.md` |
 | Cursor | `.cursorrules` + `.cursor/rules/harness.mdc` |
 | Windsurf | `.windsurfules` |
 | Gemini CLI | `GEMINI.md` |
@@ -32,7 +35,14 @@ Canonical source: `RULES.md` → synced to all tool files via `sync-rules.sh`.
 | Cline | `.clinerules` |
 | Other | Copy `RULES.md` into system prompt |
 
-### MCP servers (`.mcp.json` — cross-platform)
+### Universal enforcement (git + CI — runs under any tool or human)
+- `.githooks/pre-commit` — blocks committing secrets, auto-formats staged files
+- `.githooks/pre-push` — runs tests, blocks push on failure
+- `.github/workflows/ci.yml` — secret scan + lint + test on GitHub push/PR
+- Activated by `apply.sh` via `git config core.hooksPath .githooks`
+
+### MCP servers (per-tool config via `tools/gen-mcp.py`)
+Generates the right format/path per tool (`.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, …).
 | Server | Purpose |
 |--------|---------|
 | `github` | Repo, PR, issue management |
