@@ -131,7 +131,6 @@ setup_claude_runtime() {
     # .claude-plugin/marketplace.json (not derivable from the GitHub slug),
     # so we hardcode <github-repo>:<marketplace-name>:<plugin-name> tuples.
     for entry in \
-      "JuliusBrussee/caveman:caveman:caveman" \
       "obra/superpowers:superpowers-dev:superpowers" \
       "anthropics/skills:anthropic-agent-skills:claude-api" \
       "anthropics/skills:anthropic-agent-skills:document-skills"; do

@@ -7,7 +7,7 @@ argument-hint: <project or feature description>
 Assess what capabilities are needed for: $ARGUMENTS — across skills, MCP servers, and plugins — then install the useful ones and build.
 
 1. **Identify needs + stack** (e.g. Vercel/Next.js, Docker, Stripe, Supabase, Sentry, AWS, Postgres, Figma).
-2. **Don't re-add what the base covers:** skills/prompts (grill-me, tdd, diagnose, zoom-out, security-scan, preflight, handoff, to-issues); MCP (github, filesystem, git, playwright, db); workflow (Superpowers).
+2. **Don't re-add what the base covers:** skills/prompts (grill-me, tdd, diagnose, zoom-out, security-scan, preflight, to-issues); MCP (github, filesystem, git, playwright, db); workflow (Superpowers).
 3. **Assess gaps across all three layers:**
    - Skill → invoke `find-skills` / `npx skills find "<need>"` (skills.sh, PROFILES.md)
    - MCP → check PROFILES.md "MCP servers by stack", official registry, awesome-mcp-servers, `/plugin` Discover

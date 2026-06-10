@@ -25,7 +25,7 @@ discovery skill or the direct install commands below.
 | Risk classification | `prompts/risk-review.md` (per-diff dimension scoring) | run before `/preflight` on auth/data/infra changes |
 | Periodic checks | `prompts/audit.md` (manual / on cadence) | wire to scheduled CI if needed |
 | MCP base | github, filesystem, git, playwright, db | stack-specific table below |
-| Plugins base | superpowers, mattpocock, vercel-labs, anthropics, trailofbits | stack-specific table below |
+| Plugins base | superpowers, anthropics (claude-api + document-skills), trailofbits marketplace registered (opt-in) | stack-specific table below |
 
 ## How this differs from `find-skills`
 - **`find-skills` = discovery.** Live, ranked-by-installs search of the skills.sh
@@ -44,7 +44,6 @@ against the r/ClaudeAI "best skills" thread + the harness's own layers.)
 |--------------------|-------------------------------|
 | a custom debug/root-cause skill (e.g. myclaude `dendrite`, `five-vitals`) | `diagnose`, `zoom-out` |
 | a commit gate / secret scanner / formatter skill | the git hooks (`.githooks/`) + `security-scan` |
-| a session-close / handoff skill (e.g. `/close`, Cabinet `handoff`) | `handoff` |
 | an issue-creation / spec skill (Matt Pocock "QA Session") | `to-issues`, `grill-me` |
 | caveman-style "token saver" skills | nothing — thread consensus: trims output only, not thinking ("meme skill") |
 | context-engineering kits | redundant unless the *project itself* builds LLM agents |
@@ -159,9 +158,10 @@ community one needs `/plugin marketplace add anthropics/claude-plugins-community
 | Language intelligence (LSP) | `<lang>-lsp@claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` | ts, pyright, gopls, rust-analyzer, clangd, … — auto-diagnostics after edits |
 | Version-correct library docs | `upstash/context7` | via `/plugin` or MCP | Injects version-specific docs (React/Next/Prisma/…); community |
 
-**Already in the base plugins — don't re-add:** `obra/superpowers`,
-`mattpocock/skills`, `vercel-labs/agent-skills`, `anthropics/skills`,
-`trailofbits/skills`.
+**Already installed by `apply.sh` — don't re-add:** `obra/superpowers`,
+`anthropics/skills@claude-api`, `anthropics/skills@document-skills`. The
+`trailofbits/skills` marketplace is also pre-registered — pick specific
+plugins from it on demand (`claude plugin install <name>@trailofbits`).
 
 ## Project workflow — run exactly ONE
 

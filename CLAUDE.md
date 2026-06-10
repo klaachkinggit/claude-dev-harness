@@ -45,7 +45,7 @@
 Full sentences. Explicit confirmation required. Never skip hooks. Never force-push main.
 
 ## Claude Code Specifics
-- Slash-command equivalents of the prompts: `/grill-me`, `/tdd`, `/diagnose`, `/zoom-out`, `/to-issues`, `/handoff`, `/security-scan`, `/preflight`, `/sparc`, `/adr`, `/memorize`, `/learn`, `/audit`, `/risk-review`, `/subagent`, `/cost-review`.
+- Slash-command equivalents of the prompts: `/grill-me`, `/tdd`, `/diagnose`, `/zoom-out`, `/to-issues`, `/security-scan`, `/preflight`, `/sparc`, `/adr`, `/memorize`, `/learn`, `/audit`, `/risk-review`, `/subagent`, `/cost-review`, `/assess-capabilities`, `/adopt-harness`.
 - `/compact` before starting a new work phase.
 - Subagent model tiers: Haiku for search/summaries, Sonnet default, Opus for `/risk-review` ≥2 HIGH or `/adr`-worthy work. See `prompts/subagent.md`.
 

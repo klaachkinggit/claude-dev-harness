@@ -11,7 +11,7 @@ A description of the project, or the feature about to be built.
 1. **Identify needs** — list the concrete domains/tasks and the **stack** involved
    (e.g. Vercel/Next.js, Docker, Stripe, Supabase, Sentry, AWS, Postgres, Figma).
 2. **Check what the base already covers — do NOT re-add these:**
-   - Skills/prompts: grill-me, tdd, diagnose, zoom-out, security-scan, preflight, handoff, to-issues
+   - Skills/prompts: grill-me, tdd, diagnose, zoom-out, security-scan, preflight, to-issues
    - MCP servers: **github, filesystem, git, playwright, db (Postgres)** are already configured
    - Workflow: Superpowers (plugin)
 3. **For genuine gaps, assess all three layers:**
