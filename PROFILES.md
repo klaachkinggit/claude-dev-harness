@@ -94,6 +94,56 @@ For projects that themselves build LLM agents.
 | mcp-builder | `anthropics/skills@mcp-builder` | Build MCP servers |
 | context-engineering | `muratcankoylan/Agent-Skills-for-Context-Engineering` | Context/prompt patterns (redundant with this harness for non-agent projects) |
 
+## MCP servers by stack
+
+Skills teach *how*; MCP servers connect to *external systems* (deploys, DBs,
+error monitors, payments). Add the server for a stack your project actually uses.
+
+**Already in the base — don't re-add:** `github`, `filesystem`, `git`,
+`playwright`, `db` (Postgres via `@bytebase/dbhub`).
+
+| Stack | Server (verified) | Install / endpoint | Official? |
+|-------|-------------------|--------------------|-----------|
+| Vercel | Vercel MCP | `https://mcp.vercel.com` (OAuth) — or `npx mcp-remote https://mcp.vercel.com` | ✅ |
+| Docker | Docker Hub MCP + MCP Toolkit | `docker mcp` CLI / [hub.docker.com/mcp](https://hub.docker.com/mcp) | ✅ |
+| Stripe | Stripe MCP | `npx -y @stripe/mcp@latest --api-key=sk_...` or `https://mcp.stripe.com` | ✅ |
+| Supabase | Supabase MCP | `@supabase/mcp-server-supabase` or `https://mcp.supabase.com/mcp` | ✅ |
+| Sentry | Sentry MCP | `https://mcp.sentry.dev` (OAuth) | ✅ |
+| Cloudflare | cloudflare/mcp-server-cloudflare | `*.mcp.cloudflare.com/mcp` (per product) | ✅ |
+| AWS | awslabs/mcp (suite) | per-server via `uvx`, see [awslabs.github.io/mcp](https://awslabs.github.io/mcp/) | ✅ |
+| Notion | makenotion/notion-mcp-server | `https://mcp.notion.com/sse` (OAuth) | ✅ |
+| Linear | Linear MCP | `https://mcp.linear.app/mcp` (OAuth) | ✅ |
+| Jira/Confluence | Atlassian Rovo MCP | `https://mcp.atlassian.com/v1/mcp` (OAuth) | ✅ |
+| Figma | Figma Dev Mode MCP | local desktop `http://127.0.0.1:3845/mcp` | ✅ |
+
+> Postgres note: the old Anthropic `server-postgres` is **archived/deprecated**
+> (had a SQL-injection case) — stick with the base's `@bytebase/dbhub`.
+
+**Discover more (live):** official registry `registry.modelcontextprotocol.io` ·
+[punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) ·
+[mcp.so](https://mcp.so) · [Smithery](https://smithery.ai) · [PulseMCP](https://www.pulsemcp.com).
+
+## Plugins by stack
+
+A plugin bundles skills + commands + hooks + MCP for a whole stack — often the
+leanest way to equip a project (one install vs many loose skills).
+
+**Discovery:** run `/plugin` (Discover tab shows a **Context cost** estimate and
+exactly what each will install) · web catalog [claude.com/plugins](https://claude.com/plugins).
+The official marketplace `claude-plugins-official` is **auto-available**; the
+community one needs `/plugin marketplace add anthropics/claude-plugins-community`.
+
+| Need | Plugin | Install | Notes |
+|------|--------|---------|-------|
+| Vercel / Next.js | `vercel/vercel-plugin` | `npx plugins add vercel/vercel-plugin` | Official Vercel — 25 skills + 3 agents + 5 commands; auto-injects in Vercel/Next.js projects. **This is "the Vercel plugin."** |
+| Pre-configured MCP (one-command) | `<name>@claude-plugins-official` | `/plugin install vercel@claude-plugins-official` | github, gitlab, vercel, firebase, supabase, sentry, linear, notion, figma, slack, asana, atlassian |
+| Language intelligence (LSP) | `<lang>-lsp@claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` | ts, pyright, gopls, rust-analyzer, clangd, … — auto-diagnostics after edits |
+| Version-correct library docs | `upstash/context7` | via `/plugin` or MCP | Injects version-specific docs (React/Next/Prisma/…); community |
+
+**Already in the base plugins — don't re-add:** `obra/superpowers`,
+`mattpocock/skills`, `vercel-labs/agent-skills`, `anthropics/skills`,
+`trailofbits/skills`, `JuliusBrussee/caveman`.
+
 ## Project workflow — run exactly ONE
 
 A "workflow" skill structures how the agent plans and implements. The base ships

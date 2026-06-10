@@ -87,7 +87,7 @@ Paste into any tool — no tool-specific syntax.
 | `handoff.md` | Compact session → HANDOFF.md |
 | `security-scan.md` | OWASP Top 10 + secrets check |
 | `preflight.md` | Pre-ship checklist |
-| `assess-skills.md` | At kickoff / before a feature: assess + install the skills it needs |
+| `assess-capabilities.md` | At kickoff / before a feature: assess + install the skills, MCP servers & plugins it needs |
 | `adopt-harness.md` | Adopt the harness into an existing project + clean up redundant/stale skills |
 
 ## Per-project customization

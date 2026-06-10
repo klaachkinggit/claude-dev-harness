@@ -56,6 +56,11 @@ only if `DATABASE_URL` is set). **If your tool isn't an emitter:** read `.mcp.js
 (generic JSON schema) and translate it to your tool's MCP config format/location.
 Adding a new emitter is one function in `gen-mcp.py`.
 
+**Adding stack-specific servers** (Vercel, Docker, Stripe, Supabase, Sentry, …):
+see PROFILES.md "MCP servers by stack" for verified picks, or discover live via
+`registry.modelcontextprotocol.io`, awesome-mcp-servers, mcp.so, Smithery, PulseMCP.
+Don't re-add what gen-mcp already provides (github, filesystem, git, playwright, db).
+
 ## Runtime hooks — Claude Code & Codex
 
 Scripts live in `.claude/hooks/` (shared). They read the tool-call as JSON on
@@ -120,7 +125,7 @@ commands where supported (Claude: `/grill-me`; Codex: drop into `~/.codex/prompt
 | `handoff` | Compact session → HANDOFF.md |
 | `security-scan` | OWASP Top 10 + secrets |
 | `preflight` | Pre-ship checklist |
-| `assess-skills` | Assess + install the skills a project/feature needs (drives find-skills) |
+| `assess-capabilities` | Assess + install the skills, MCP servers & plugins a project/feature needs |
 | `adopt-harness` | Adopt harness into an existing project + clean up its skills |
 
 ## If you're a brand-new tool with none of these mechanisms
