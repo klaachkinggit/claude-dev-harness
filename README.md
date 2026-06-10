@@ -35,7 +35,7 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` / `.cursor/mcp.json` / `.codex/config.toml`). Stack-specific servers → [PROFILES.md](PROFILES.md).
 
 ### Plugins (Claude Code — installed by `apply.sh`)
-`obra/superpowers` (workflow), `mattpocock/skills` (engineering discipline), `vercel-labs/agent-skills` (UI/perf), `anthropics/skills` (design + docs), `trailofbits/skills` (security).
+`obra/superpowers` (workflow), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat).
 
 ### Hooks (Claude Code & Codex — `.claude/hooks/`)
 | Script | Trigger | Does |
@@ -51,7 +51,7 @@ Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATA
 Base bundles only `find-skills` (discovers/installs any other skill on demand). Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal. Token discipline comes from model-tier routing (`prompts/subagent.md`), `/compact`, and `/cost-review` — not from output-compression skills.
 
 ### Prompts (`prompts/` — paste into any tool)
-`grill-me` (requirements interview), `sparc` (5-phase build), `tdd` (RED-GREEN-REFACTOR), `diagnose` (8-step debug), `to-issues` (plan → issues), `zoom-out` (system map), `handoff` (session → HANDOFF.md), `security-scan` (OWASP + secrets + PII), `risk-review` (diff risk classifier), `preflight` (pre-ship checklist), `audit` (periodic repo health), `adr` (architecture decision record), `memorize` (append to `MEMORY.md`), `learn` (append to `LESSONS.md`), `subagent` (when to delegate + Haiku/Sonnet/Opus tier routing), `cost-review` (token/spend check), `assess-capabilities` (acquire skills/MCP/plugins for a project/feature), `adopt-harness` (adopt into existing project + clean up). Claude/Codex get the same as `/slash` commands.
+`grill-me` (requirements interview), `sparc` (5-phase build), `tdd` (RED-GREEN-REFACTOR), `diagnose` (8-step debug), `to-issues` (plan → issues), `zoom-out` (system map), `security-scan` (OWASP + secrets + PII), `risk-review` (diff risk classifier), `preflight` (pre-ship checklist), `audit` (periodic repo health), `adr` (architecture decision record), `memorize` (append to `MEMORY.md`), `learn` (append to `LESSONS.md`), `subagent` (when to delegate + Haiku/Sonnet/Opus tier routing), `cost-review` (token/spend check), `assess-capabilities` (acquire skills/MCP/plugins for a project/feature), `adopt-harness` (adopt into existing project + clean up). Claude/Codex get the same as `/slash` commands.
 
 ### Memory, decisions & learning
 - `MEMORY.md` — append-only cross-session memory (state of the world). See `prompts/memorize.md`.
