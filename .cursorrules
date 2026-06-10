@@ -6,23 +6,22 @@
 3. **No silent mutations.** Never remove or change code you don't understand without flagging it first.
 
 ## Communication
-- Caveman ultra default. Off only: security warnings, destructive op confirmations.
-- No pleasantries, hedging, filler. No trailing summaries — diff speaks.
+- Terse by default. No pleasantries, hedging, filler. No trailing summaries — diff speaks.
 - Reference code as `file:line`. Fragments OK.
+- Full sentences only for: security warnings, destructive op confirmations.
 
 ## Code
 - No comments unless WHY is non-obvious (hidden constraint, workaround, subtle invariant).
 - No error handling for impossible scenarios. Trust framework/internal guarantees.
 - No features beyond task scope. No half-finished implementations.
 - Validate only at system boundaries (user input, external APIs).
-- No security vulnerabilities: SQL injection, XSS, command injection, hardcoded secrets all blocked.
+- No security vulnerabilities: SQL injection, XSS, command injection, hardcoded secrets.
 
 ## Workflow
+- Use `prompts/grill-me.md` before any large implementation — uncover all decision branches first.
 - Failing test before implementation on any non-trivial change.
-- `/compact` before starting a new work phase.
-- `/grill-me` (or `prompts/grill-me.md`) before any large implementation — uncover all decision branches first.
-- `/security-scan` (or `prompts/security-scan.md`) on any auth, data persistence, or infra change.
-- `/preflight` (or `prompts/preflight.md`) before every PR or deploy.
+- Use `prompts/security-scan.md` on any auth, data persistence, or infra change.
+- Use `prompts/preflight.md` before every PR or deploy.
 
 ## Destructive Actions
 Full sentences. Explicit confirmation required. Never skip hooks. Never force-push main.
