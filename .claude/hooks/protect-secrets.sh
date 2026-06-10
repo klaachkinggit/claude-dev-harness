@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 # Blocks Read/Write/Edit on sensitive files. Exit 2 = hard block.
 INPUT=$(cat)
-FILE=$(python3 -c "
+FILE=$(printf '%s' "$INPUT" | python3 -c "
 import sys, json
-d = json.loads('$INPUT'.replace(\"'\", \"'\") if False else sys.stdin.read() if False else '')
-" 2>/dev/null <<< "$INPUT" || echo "")
-
-FILE=$(python3 - <<'EOF'
-import sys, json
-d = json.load(sys.stdin)
-print(d.get('tool_input', {}).get('file_path', '') or d.get('tool_input', {}).get('path', ''))
-EOF
-<<< "$INPUT" 2>/dev/null || echo "")
+try:
+    ti = json.load(sys.stdin).get('tool_input', {})
+    print(ti.get('file_path', '') or ti.get('path', ''))
+except Exception:
+    pass
+" 2>/dev/null)
 
 [ -z "$FILE" ] && exit 0
 
@@ -22,7 +19,7 @@ PATTERNS=(
 )
 
 for pat in "${PATTERNS[@]}"; do
-  if echo "$FILE" | grep -qE "$pat"; then
+  if printf '%s' "$FILE" | grep -qE "$pat"; then
     echo "BLOCKED: sensitive file — $FILE" >&2
     exit 2
   fi

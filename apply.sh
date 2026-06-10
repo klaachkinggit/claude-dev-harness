@@ -46,36 +46,47 @@ fi
 
 fetch() { curl -fsSL "${RAW}/$1"; }
 
+# Fetch into a destination, backing up any existing file first.
+fetch_safe() {
+  local src="$1" dst="$2"
+  if [ -f "$dst" ]; then
+    cp "$dst" "${dst}.bak"
+    echo "  backed up existing $dst → ${dst}.bak"
+  fi
+  fetch "$src" > "$dst"
+}
+
 # ── Rules file ────────────────────────────────────────────────
 echo "[1/3] Rules..."
 case "$TOOL" in
   claude)
-    fetch "CLAUDE.md" > CLAUDE.md ;;
+    fetch_safe "CLAUDE.md" "CLAUDE.md" ;;
   cursor)
-    fetch "RULES.md" > .cursorrules
+    fetch_safe "RULES.md" ".cursorrules"
     mkdir -p .cursor/rules
-    fetch ".cursor/rules/harness.mdc" > .cursor/rules/harness.mdc ;;
+    fetch_safe ".cursor/rules/harness.mdc" ".cursor/rules/harness.mdc" ;;
   windsurf)
-    fetch "RULES.md" > .windsurfules ;;
+    fetch_safe "RULES.md" ".windsurfules" ;;
   gemini)
-    fetch "RULES.md" > GEMINI.md ;;
+    fetch_safe "RULES.md" "GEMINI.md" ;;
   copilot)
     mkdir -p .github
-    fetch "RULES.md" > .github/copilot-instructions.md ;;
+    fetch_safe "RULES.md" ".github/copilot-instructions.md" ;;
   cline)
-    fetch "RULES.md" > .clinerules ;;
+    fetch_safe "RULES.md" ".clinerules" ;;
   all|*)
-    fetch "CLAUDE.md" > CLAUDE.md
-    fetch "RULES.md" > GEMINI.md
-    fetch "RULES.md" > AGENTS.md
-    fetch "RULES.md" > .cursorrules
-    fetch "RULES.md" > .windsurfules
-    fetch "RULES.md" > .clinerules
+    fetch_safe "CLAUDE.md" "CLAUDE.md"
+    fetch_safe "RULES.md" "GEMINI.md"
+    fetch_safe "RULES.md" "AGENTS.md"
+    fetch_safe "RULES.md" ".cursorrules"
+    fetch_safe "RULES.md" ".windsurfules"
+    fetch_safe "RULES.md" ".clinerules"
     mkdir -p .github .cursor/rules
-    fetch "RULES.md" > .github/copilot-instructions.md
-    fetch ".cursor/rules/harness.mdc" > .cursor/rules/harness.mdc ;;
+    fetch_safe "RULES.md" ".github/copilot-instructions.md"
+    fetch_safe ".cursor/rules/harness.mdc" ".cursor/rules/harness.mdc" ;;
 esac
-fetch ".mcp.json" > .mcp.json
+fetch_safe ".mcp.json" ".mcp.json"
+[ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 
 # ── Universal prompts ─────────────────────────────────────────
 echo "[2/3] Prompts..."
@@ -85,6 +96,9 @@ for p in grill-me tdd diagnose to-issues zoom-out handoff security-scan prefligh
 done
 
 # ── Claude Code extras ────────────────────────────────────────
+MCP_FAILED=()
+PLUGIN_FAILED=()
+
 if [ "$TOOL" = "claude" ] || [ "$TOOL" = "all" ]; then
   echo "[3/3] Claude Code files (commands, hooks, settings)..."
   mkdir -p .claude/commands .claude/hooks .claude/skills/caveman
@@ -98,38 +112,68 @@ if [ "$TOOL" = "claude" ] || [ "$TOOL" = "all" ]; then
     chmod +x ".claude/hooks/${hook}.sh"
   done
 
-  fetch ".claude/settings.json" > .claude/settings.json
+  fetch_safe ".claude/settings.json" ".claude/settings.json"
   fetch ".claude/skills/caveman/SKILL.md" > .claude/skills/caveman/SKILL.md
 
-  # MCP servers
+  # MCP servers — surface failures instead of swallowing them.
   if command -v claude >/dev/null 2>&1; then
     echo ""
     echo "Setting up MCP servers..."
-    claude mcp add --scope project github -- npx -y @modelcontextprotocol/server-github 2>/dev/null || true
-    claude mcp add --scope project --transport stdio filesystem -- npx -y @modelcontextprotocol/server-filesystem . 2>/dev/null || true
-    claude mcp add --scope project --transport stdio git -- npx -y @modelcontextprotocol/server-git . 2>/dev/null || true
-    claude mcp add --scope project --transport stdio playwright -- npx -y @playwright/mcp 2>/dev/null || true
+    add_mcp() {
+      local name="$1"; shift
+      if claude mcp add "$@"; then
+        echo "  ✓ $name"
+      else
+        echo "  ✗ $name (see error above)"
+        MCP_FAILED+=("$name")
+      fi
+    }
+    add_mcp github --scope project github -- npx -y @modelcontextprotocol/server-github
+    add_mcp filesystem --scope project --transport stdio filesystem -- npx -y @modelcontextprotocol/server-filesystem .
+    add_mcp git --scope project --transport stdio git -- npx -y @modelcontextprotocol/server-git .
+    add_mcp playwright --scope project --transport stdio playwright -- npx -y @playwright/mcp
     if [ -n "${DATABASE_URL:-}" ]; then
-      claude mcp add --scope project --transport stdio db -- npx -y @bytebase/dbhub --dsn "$DATABASE_URL" 2>/dev/null || true
+      add_mcp db --scope project --transport stdio db -- npx -y @bytebase/dbhub --dsn "$DATABASE_URL"
     fi
 
-    # Plugins — graceful fallback if command fails
+    # Plugins — track failures, report at end.
     echo ""
-    echo "Installing plugins (failures are non-fatal — install manually if needed)..."
+    echo "Installing plugins..."
     for plugin in obra/superpowers mattpocock/skills vercel-labs/agent-skills anthropics/skills trailofbits/skills JuliusBrussee/caveman; do
-      claude plugin install "$plugin" 2>/dev/null && echo "  ✓ $plugin" || echo "  ✗ $plugin — install manually"
+      if claude plugin install "$plugin" >/dev/null 2>&1; then
+        echo "  ✓ $plugin"
+      else
+        echo "  ✗ $plugin"
+        PLUGIN_FAILED+=("$plugin")
+      fi
     done
   else
     echo "  claude CLI not found — MCP and plugin setup skipped"
+    MCP_FAILED+=("ALL (claude CLI missing)")
   fi
 else
   echo "[3/3] Skipped (non-Claude tool — use .mcp.json for MCP server config)"
 fi
 
+# ── Summary + verification ────────────────────────────────────
 echo ""
 echo "=== Done ==="
 echo ""
 echo "Next: add project-specific rules at the bottom of your rules file."
 echo "Prompts: see prompts/ for workflow templates (paste into any tool)."
-[ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 echo "Env vars: copy .env.example → .env and fill in GITHUB_TOKEN."
+
+if [ ${#MCP_FAILED[@]} -gt 0 ] || [ ${#PLUGIN_FAILED[@]} -gt 0 ]; then
+  echo ""
+  echo "⚠️  Some setup steps FAILED — harness is only partially installed:"
+  [ ${#MCP_FAILED[@]} -gt 0 ] && echo "   MCP servers: ${MCP_FAILED[*]}"
+  [ ${#PLUGIN_FAILED[@]} -gt 0 ] && echo "   Plugins: ${PLUGIN_FAILED[*]}"
+  echo "   Re-run after fixing (e.g. set GITHUB_TOKEN, check network), or install manually."
+fi
+
+if { [ "$TOOL" = "claude" ] || [ "$TOOL" = "all" ]; } && command -v claude >/dev/null 2>&1; then
+  echo ""
+  echo "VERIFY setup:"
+  echo "   claude mcp list      ← confirm servers are registered"
+  echo "   ls .claude/hooks/    ← confirm 5 hook scripts present"
+fi

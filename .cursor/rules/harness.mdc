@@ -3,6 +3,7 @@ description: Core dev harness behavioral rules — applies to all files
 alwaysApply: true
 ---
 
+
 ## Foundational Rules (Karpathy)
 1. **No silent assumptions.** Task ambiguous → ask one focused question before proceeding. Never assume scope and run with it.
 2. **No over-abstraction.** Simplest code that solves the problem. Three similar lines > premature abstraction. No hypothetical future requirements.
@@ -21,10 +22,10 @@ alwaysApply: true
 - No security vulnerabilities: SQL injection, XSS, command injection, hardcoded secrets.
 
 ## Workflow
-- Use `prompts/grill-me.md` before any large implementation.
+- Use `prompts/grill-me.md` before any large implementation — uncover all decision branches first.
 - Failing test before implementation on any non-trivial change.
 - Use `prompts/security-scan.md` on any auth, data persistence, or infra change.
 - Use `prompts/preflight.md` before every PR or deploy.
 
 ## Destructive Actions
-Full sentences. Explicit confirmation required. Never force-push main.
+Full sentences. Explicit confirmation required. Never skip hooks. Never force-push main.

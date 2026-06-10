@@ -47,12 +47,16 @@ TOOL=all bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/claud
 | Cline | `.clinerules` |
 | Other | Copy contents of `RULES.md` into your system prompt |
 
-## After applying
+## After applying — VERIFY (do not skip)
 
-1. Add project-specific rules at the bottom of your rules file (after the `<!-- Add project-specific rules below this line -->` comment)
-2. Copy `.env.example` → `.env` and fill in `GITHUB_TOKEN`
-3. Set `DATABASE_URL` in `.env` if using PostgreSQL
-4. For Claude Code: run `claude mcp list` to verify MCP servers are registered
+The setup can partially fail silently (missing token, network, CLI mismatch). `apply.sh` prints a `⚠️ Some setup steps FAILED` block if anything broke — **read it**. Then confirm:
+
+1. **MCP servers** (Claude Code): run `claude mcp list` — confirm `github`, `filesystem`, `git`, `playwright` are listed. Empty list = setup failed; re-run after fixing `GITHUB_TOKEN`.
+2. **Hooks** (Claude Code): run `ls .claude/hooks/` — confirm 5 `.sh` files present and executable.
+3. **Env**: copy `.env.example` → `.env`, fill in `GITHUB_TOKEN` (and `DATABASE_URL` if using PostgreSQL).
+4. **Overwrites**: if you had existing config, `apply.sh` saved it to `<file>.bak` — diff and merge anything you need back.
+
+Then add project-specific rules at the bottom of your rules file (after the `<!-- Add project-specific rules below this line -->` comment).
 
 ## Per-project customization
 

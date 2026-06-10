@@ -1,5 +1,4 @@
 # Dev Harness — Behavioral Rules
-<!-- CANONICAL SOURCE — run sync-rules.sh after editing to push changes to all tool files -->
 
 ## Foundational Rules (Karpathy)
 1. **No silent assumptions.** Task ambiguous → ask one focused question before proceeding. Never assume scope and run with it.
@@ -26,6 +25,3 @@
 
 ## Destructive Actions
 Full sentences. Explicit confirmation required. Never skip hooks. Never force-push main.
-
----
-<!-- Add project-specific rules below this line -->

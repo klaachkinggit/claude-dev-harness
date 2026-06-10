@@ -32,3 +32,6 @@ HANDOFF.md
 
 # Secrets
 .env
+
+# apply.sh backups
+*.bak

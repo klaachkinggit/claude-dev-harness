@@ -89,13 +89,15 @@ Add at the bottom of your rules file (below the `<!-- Add project-specific rules
 - Schema changes require a migration file in `prisma/migrations/`
 ```
 
-## Maintaining rules
+## Maintaining rules (harness maintainers only)
 
-When you update `RULES.md`, sync all tool files:
+`RULES.md` is the single source. After editing it, regenerate every tool file:
 ```bash
 ./sync-rules.sh
 ```
-`CLAUDE.md` is not synced — it has extra Claude-specific content. Update manually if needed.
+This regenerates `GEMINI.md`, `AGENTS.md`, `.cursorrules`, `.windsurfules`, `.clinerules`, `.github/copilot-instructions.md`, `.cursor/rules/harness.mdc`, and `CLAUDE.md`. The Claude-specific additions live in `.claude-extra.md` and are appended to `CLAUDE.md` automatically — nothing diverges.
+
+> Run `sync-rules.sh` **only in this harness repo**. In a target project you own the rules files and edit them freely — never run it there (it would overwrite your project rules). `apply.sh` backs up any file it would overwrite to `<file>.bak`.
 
 ## Environment variables
 

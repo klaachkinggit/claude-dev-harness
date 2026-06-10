@@ -18,13 +18,13 @@
 - No security vulnerabilities: SQL injection, XSS, command injection, hardcoded secrets.
 
 ## Workflow
-- Use `prompts/grill-me.md` before any large implementation.
+- Use `prompts/grill-me.md` before any large implementation — uncover all decision branches first.
 - Failing test before implementation on any non-trivial change.
 - Use `prompts/security-scan.md` on any auth, data persistence, or infra change.
 - Use `prompts/preflight.md` before every PR or deploy.
 
 ## Destructive Actions
-Full sentences. Explicit confirmation required. Never force-push main.
+Full sentences. Explicit confirmation required. Never skip hooks. Never force-push main.
 
 ---
 <!-- Add project-specific rules below this line -->
