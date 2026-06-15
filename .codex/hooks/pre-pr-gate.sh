@@ -3,7 +3,7 @@
 # Matcher: mcp__github__create_pull_request
 set -euo pipefail
 
-cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+cd "${CODEX_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 run_tests() {
   echo "Running tests before PR..." >&2

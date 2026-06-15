@@ -26,9 +26,11 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 |------|------|--------------------|
 | Claude Code | `CLAUDE.md` | `${VAR}` |
 | Codex CLI | `AGENTS.md` | none — forward by name (`env_vars`) |
+| Compatibility | `AGENT.md` → `AGENTS.md` | n/a |
 | Not listed? | copy `RULES.md` into your system prompt | check your docs |
 
-> This harness targets **Claude Code + Codex**. Other tools' rule files (Gemini, Cursor, Windsurf, Cline, Copilot) are archived in `.harness-archive/` — regenerate any of them from `RULES.md` if you re-add a tool.
+> This harness targets **Claude Code + Codex**. Other tools should use `RULES.md`
+> as their source; removed provider files are recoverable from git history.
 
 ## MCP — getting servers into your tool
 `tools/gen-mcp.py` is the single source; it emits the right format/path:
@@ -40,9 +42,9 @@ Base servers: `github`, `filesystem`, `git`, `playwright`, `db` (if `DATABASE_UR
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Docker, Stripe, …) → PROFILES.md, or discover live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
 
 ## Runtime hooks — Claude Code & Codex
-Shared scripts in `.claude/hooks/` read the tool-call as JSON on stdin, exit `2` to block.
-- **Claude Code:** wired in `.claude/settings.json`.
-- **Codex:** wired in `.codex/hooks.json` (same scripts).
+Provider-local scripts read the tool-call as JSON on stdin and exit `2` to block.
+- **Claude Code:** wired in `.claude/settings.json`, scripts in `.claude/hooks/`.
+- **Codex:** wired in `.codex/hooks.json`, scripts in `.codex/hooks/`.
 - **⚠️ Codex caveat:** scripts expect `tool_input.command` / `tool_input.file_path`. Codex's schema mirrors Claude's but field names may differ by version — **test with a known-bad command first**; if the field is absent the scripts **fail open** (no block).
 - **Other tools (no hook system):** no runtime blocking — the git hooks cover the same ground at commit/push.
 
@@ -51,7 +53,7 @@ Shared scripts in `.claude/hooks/` read the tool-call as JSON on stdin, exit `2`
 | `block-dangerous.sh` | recursive rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb, mkfs, dd-to-disk; **+ rm/mv/truncate of `.env`/`.env.local` and `git clean -f`** (append `>>`, `cp` restore, and `.env.example` stay allowed) |
 | `protect-secrets.sh` | read/write/edit of `.env`/`.pem`/`.key`/credentials via the file tools; **allows `*.example` templates** |
 | `auto-format.sh` | prettier/black/ruff/gofmt/rustfmt on edited files |
-| `log-bash.sh` | logs commands to `.claude/bash.log` |
+| `log-bash.sh` | logs commands to provider-local logs (`.claude/bash.log`, `.codex/bash.log`) |
 | `pre-pr-gate.sh` | blocks PR if tests fail |
 
 ## Git + CI — universal enforcement (every tool, every human)
@@ -69,12 +71,12 @@ The single biggest token saver: a local, pre-indexed symbol/call/import graph th
 - **Use it:** `codegraph_search` / `codegraph_explore` to find symbols, callers, and blast radius before reading files; `codegraph_status` to confirm sync. See the **Token economy** rules in `RULES.md`.
 
 ## Skills — lean on purpose
-Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles `find-skills` (installs any other skill on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
+Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles `find-skills` (installs any other skill on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. The base set is intentionally mirrored in `.claude/skills/` and `.codex/skills/`; keep both mirrors in sync. Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
 
 Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
 
 ## Prompts
-`prompts/*.md` — plain markdown, paste anywhere; or `/slash` commands in Claude/Codex (Codex: drop into `~/.codex/prompts/`). List in README.
+`prompts/*.md` — plain markdown, paste anywhere. Claude gets thin wrappers in `.claude/commands/`; Codex uses the shared prompt bodies directly or user-level `~/.codex/prompts/`. List in README.
 
 ## Brand-new tool with none of these mechanisms?
 Minimum viable adoption, in order:

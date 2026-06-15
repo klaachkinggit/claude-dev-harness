@@ -14,7 +14,7 @@ discovery skill or the direct install commands below.
 |------------|---------|------------|
 | Behavioral contract | `RULES.md` synced to every tool | edit `RULES.md` only; `./sync-rules.sh` |
 | Enforcement (boundary) | `.githooks/`, `.github/workflows/ci.yml` | add jobs to CI |
-| Runtime safety (Claude/Codex) | `.claude/hooks/` (secrets, dangerous bash, format) | add hooks in `.claude/hooks/` |
+| Runtime safety (Claude/Codex) | provider mirrors: `.claude/hooks/`, `.codex/hooks/` | add behavior-equivalent hooks to both mirrors |
 | Skill discovery | `find-skills` | profiles below |
 | Token discipline | Lean-skills rule (HARNESS.md:72), `/compact`, **model-tier routing in `prompts/subagent.md`** (Haiku/Sonnet/Opus), `/cost-review` | — (see "Don't install" below) |
 | Subagent delegation | `prompts/subagent.md` — when to spawn + which model tier | — (model-agnostic guidance, no runtime) |
@@ -65,6 +65,10 @@ npx skills add <owner/repo@skill> -g -y    # global
 
 Quality bar before installing: prefer 1K+ installs, prefer official sources
 (`vercel-labs`, `anthropics`, `microsoft`), treat <100-star repos skeptically.
+
+When adding a base or project-local skill for both runtimes, mirror it under
+both `.claude/skills/` and `.codex/skills/`. If only one tool needs it, keep it
+provider-local and document why.
 
 ## Profiles
 

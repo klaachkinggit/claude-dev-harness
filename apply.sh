@@ -36,19 +36,20 @@ fetch_safe() {  # fetch src → dst, backing up an existing dst first
   if [ -f "$dst" ]; then cp "$dst" "${dst}.bak"; echo "  backed up $dst → ${dst}.bak"; fi
   fetch "$src" > "$dst"
 }
-fetch_hooks() {  # shared hook scripts (used by both Claude Code and Codex)
-  mkdir -p .claude/hooks
+fetch_hooks() {
+  local dir="$1"
+  mkdir -p "${dir}/hooks"
   for h in protect-secrets block-dangerous auto-format log-bash pre-pr-gate; do
-    fetch ".claude/hooks/${h}.sh" > ".claude/hooks/${h}.sh"; chmod +x ".claude/hooks/${h}.sh"
+    fetch "${dir}/hooks/${h}.sh" > "${dir}/hooks/${h}.sh"; chmod +x "${dir}/hooks/${h}.sh"
   done
 }
 
 # ── [1/6] Rules ───────────────────────────────────────────────
 echo "[1/6] Rules..."
 case "$TOOL" in
-  claude)  fetch_safe "CLAUDE.md" "CLAUDE.md" ;;
-  codex)   fetch_safe "AGENTS.md" "AGENTS.md" ;;
-  all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md" ;;
+  claude)  fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENT.md" "AGENT.md" ;;
+  codex)   fetch_safe "AGENTS.md" "AGENTS.md"; fetch_safe "AGENT.md" "AGENT.md" ;;
+  all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md"; fetch_safe "AGENT.md" "AGENT.md" ;;
 esac
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 
@@ -94,10 +95,11 @@ fi
 echo "[5/6] Runtime extras..."
 PLUGIN_FAILED=()
 
-fetch_skills() {  # Claude Code & Codex both support skills
+fetch_skills() {
+  local dir="$1"
   for skill in find-skills ui-ux-pro-max impeccable awesome-design-md frontend-design web-design-guidelines; do
-    mkdir -p ".claude/skills/${skill}"
-    fetch ".claude/skills/${skill}/SKILL.md" > ".claude/skills/${skill}/SKILL.md"
+    mkdir -p "${dir}/skills/${skill}"
+    fetch "${dir}/skills/${skill}/SKILL.md" > "${dir}/skills/${skill}/SKILL.md"
   done
 }
 
@@ -107,8 +109,8 @@ setup_claude_runtime() {
            learn memorize preflight risk-review security-scan sparc subagent tdd to-issues zoom-out; do
     fetch ".claude/commands/${c}.md" > ".claude/commands/${c}.md"
   done
-  fetch_hooks
-  fetch_skills
+  fetch_hooks ".claude"
+  fetch_skills ".claude"
   fetch_safe ".claude/settings.json" ".claude/settings.json"
   if command -v claude >/dev/null 2>&1; then
     echo "  installing Claude plugins..."
@@ -140,10 +142,10 @@ setup_claude_runtime() {
 }
 
 setup_codex_runtime() {
-  fetch_hooks                                   # Codex hooks reuse the same scripts
-  fetch_skills                                  # Codex supports skills too
+  fetch_hooks ".codex"
+  fetch_skills ".codex"
   fetch_safe ".codex/hooks.json" ".codex/hooks.json"
-  echo "  Codex hooks written to .codex/hooks.json (reuses .claude/hooks/ scripts)."
+  echo "  Codex hooks written to .codex/hooks.json and .codex/hooks/."
   echo "  VERIFY hook stdin field names match your Codex version — see HARNESS.md."
 }
 
@@ -182,7 +184,8 @@ fi
 echo ""
 echo "VERIFY:"
 echo "   git config --get core.hooksPath     → should print .githooks"
-echo "   ls .claude/hooks/ 2>/dev/null        → 5 scripts (Claude/Codex)"
+echo "   ls .claude/hooks/ 2>/dev/null        → 5 scripts if Claude enabled"
+echo "   ls .codex/hooks/ 2>/dev/null         → 5 scripts if Codex enabled"
 if { [ "$TOOL" = "claude" ] || [ "$TOOL" = "all" ]; } && command -v claude >/dev/null 2>&1; then
   echo "   claude mcp list                      → confirm servers (reads .mcp.json)"
 fi
