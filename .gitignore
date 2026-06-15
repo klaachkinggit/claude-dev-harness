@@ -28,6 +28,11 @@ Thumbs.db
 # Claude session files
 .claude/projects/
 .claude/bash.log
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/sessions/
+.codex/bash.log
+.codex/sessions/
 HANDOFF.md
 MEMORY.md
 

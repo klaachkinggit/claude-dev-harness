@@ -19,7 +19,7 @@
 
 ## Workflow
 - Before any non-trivial feature, assess whether a skill, MCP server, or plugin would help (`prompts/assess-capabilities.md` / `find-skills`); vet and install before building. Never add what the base already covers.
-- Front-end / UI work → use the design skills in `.claude/skills/`: `frontend-design` (bold, anti-generic UI), `ui-ux-pro-max` (styles, palettes, font pairs, UX rules), `impeccable` (anti-slop self-audit), `web-design-guidelines` (a11y / Web Interface Guidelines review), `awesome-design-md` (drop-in design systems). Commit to one aesthetic direction; audit before shipping.
+- Front-end / UI work → use the design skills in the provider-local mirror (`.codex/skills/` for Codex, `.claude/skills/` for Claude): `frontend-design` (bold, anti-generic UI), `ui-ux-pro-max` (styles, palettes, font pairs, UX rules), `impeccable` (anti-slop self-audit), `web-design-guidelines` (a11y / Web Interface Guidelines review), `awesome-design-md` (drop-in design systems). Commit to one aesthetic direction; audit before shipping.
 - Use `prompts/grill-me.md` before any large implementation — uncover all decision branches first.
 - Multi-file behavior change → run `prompts/sparc.md` (Spec → Pseudocode → Architecture → Refinement → Completion). Skip for typo/single-line/bump.
 - Failing test before implementation on any non-trivial change.
@@ -51,6 +51,14 @@
 
 ## Destructive Actions
 Full sentences. Explicit confirmation required. Never skip hooks. Never force-push main.
+
+## Harness Parity
+- This harness intentionally carries provider mirrors so users can switch between Codex and Claude without changing project behavior.
+- Keep `AGENTS.md` and `CLAUDE.md` semantically in sync. `AGENT.md` is only a compatibility pointer to `AGENTS.md`.
+- Keep `.codex/skills/` and `.claude/skills/` mirrored. Codex loads `.codex`; Claude loads `.claude`.
+- Keep `.codex/hooks/` and `.claude/hooks/` behavior-equivalent, with provider-specific log paths.
+- Shared workflow bodies live in `prompts/`. Claude slash commands in `.claude/commands/` should stay thin wrappers to those files.
+- Do not keep in-repo harness archive folders. Use git history for removed provider files.
 
 ## Claude Code Specifics
 - Slash-command equivalents of the prompts: `/grill-me`, `/tdd`, `/diagnose`, `/zoom-out`, `/to-issues`, `/security-scan`, `/preflight`, `/sparc`, `/adr`, `/memorize`, `/learn`, `/audit`, `/risk-review`, `/subagent`, `/cost-review`, `/assess-capabilities`, `/adopt-harness`.

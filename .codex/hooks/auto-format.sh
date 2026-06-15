@@ -11,7 +11,7 @@ except Exception:
 
 { [ -z "$FILE" ] || [ ! -f "$FILE" ]; } && exit 0
 
-ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+ROOT="${CODEX_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 EXT="${FILE##*.}"
 
 case "$EXT" in
