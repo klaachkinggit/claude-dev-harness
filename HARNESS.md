@@ -26,7 +26,6 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 |------|------|--------------------|
 | Claude Code | `CLAUDE.md` | `${VAR}` |
 | Codex CLI | `AGENTS.md` | none — forward by name (`env_vars`) |
-| Compatibility | `AGENT.md` → `AGENTS.md` | n/a |
 | Not listed? | copy `RULES.md` into your system prompt | check your docs |
 
 > This harness targets **Claude Code + Codex**. Other tools should use `RULES.md`
