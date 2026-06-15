@@ -7,7 +7,7 @@ what's genuinely project-specific.
 
 ## Steps
 1. **Inventory** what's already there — list it before touching anything:
-   - `AGENTS.md`, `CLAUDE.md`, `AGENT.md`, `prompts/`, `.mcp.json`
+   - `AGENTS.md`, `CLAUDE.md`, `prompts/`, `.mcp.json`
    - provider mirrors: `.codex/`, `.claude/`
    - legacy provider folders/files only if present (`.agents/`, `.cursor/`, `.cursorrules`, `GEMINI.md`, …)
    - git hooks (`git config --get core.hooksPath`), CI workflows in `.github/`

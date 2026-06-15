@@ -22,7 +22,6 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 |------|------|
 | Claude Code | `CLAUDE.md` (= `RULES.md` + `.claude-extra.md`) |
 | Codex | `AGENTS.md` |
-| Compatibility | `AGENT.md` → `AGENTS.md` |
 | Other | copy `RULES.md` into the system prompt |
 
 ### Universal enforcement (git + CI — any tool or human)

@@ -23,14 +23,5 @@ done
 { cat RULES.md; [ -f ".claude-extra.md" ] && cat ".claude-extra.md"; printf '%s\n' "$MARKER"; } > "CLAUDE.md"
 echo "  synced → CLAUDE.md (+ .claude-extra.md)"
 
-cat > "AGENT.md" <<'EOF'
-# Agent Entry
-
-Use `AGENTS.md` for the canonical shared agent rules.
-
-`CLAUDE.md` mirrors the same rules for Claude Code. Keep all project-rule edits in `AGENTS.md` and `CLAUDE.md` together.
-EOF
-echo "  synced → AGENT.md (compatibility pointer)"
-
 echo ""
 echo "Done. All tool rules files regenerated from RULES.md."

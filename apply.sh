@@ -47,9 +47,9 @@ fetch_hooks() {
 # ── [1/6] Rules ───────────────────────────────────────────────
 echo "[1/6] Rules..."
 case "$TOOL" in
-  claude)  fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENT.md" "AGENT.md" ;;
-  codex)   fetch_safe "AGENTS.md" "AGENTS.md"; fetch_safe "AGENT.md" "AGENT.md" ;;
-  all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md"; fetch_safe "AGENT.md" "AGENT.md" ;;
+  claude)  fetch_safe "CLAUDE.md" "CLAUDE.md" ;;
+  codex)   fetch_safe "AGENTS.md" "AGENTS.md" ;;
+  all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md" ;;
 esac
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 
