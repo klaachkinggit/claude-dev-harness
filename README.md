@@ -1,6 +1,6 @@
 # klaach_harness
 
-Model-agnostic harness for AI-assisted software dev. Works with Claude Code, Codex CLI, Cursor, Windsurf, Gemini CLI, Copilot, Cline, and any future tool.
+Harness for AI-assisted software dev, built for **Claude Code + Codex CLI**. Rules/prompts stay portable, and all *enforcement* lives at the git+CI layer — so other tools still work; their rule files are archived in `.harness-archive/` (regenerate from `RULES.md` if you re-add one).
 
 **Use:** point any agent at this repo; it self-installs. Setup → [APPLY.md](APPLY.md). Per-tool capability map → [HARNESS.md](HARNESS.md). Per-project skill/MCP/plugin packs → [PROFILES.md](PROFILES.md).
 
@@ -9,7 +9,7 @@ Model-agnostic harness for AI-assisted software dev. Works with Claude Code, Cod
 ## Quick apply
 
 ```bash
-# TOOL = claude | codex | cursor | windsurf | gemini | copilot | cline | all
+# TOOL = claude | codex | all
 TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 ```
 
@@ -18,12 +18,11 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 ### Rules — behavioral contract
 `RULES.md` is the single source, synced to every tool's file by `sync-rules.sh`.
 
-| Tool | File | | Tool | File |
-|------|------|-|------|------|
-| Claude Code | `CLAUDE.md` | | Gemini | `GEMINI.md` |
-| Codex | `AGENTS.md` | | Copilot | `.github/copilot-instructions.md` |
-| Cursor | `.cursorrules` + `.cursor/rules/harness.mdc` | | Cline | `.clinerules` |
-| Windsurf | `.windsurfules` | | Other | copy `RULES.md` into system prompt |
+| Tool | File |
+|------|------|
+| Claude Code | `CLAUDE.md` (= `RULES.md` + `.claude-extra.md`) |
+| Codex | `AGENTS.md` |
+| Other | copy `RULES.md` into the system prompt |
 
 ### Universal enforcement (git + CI — any tool or human)
 - `.githooks/pre-commit` — block secrets, auto-format staged files
@@ -32,7 +31,10 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 - Activated by `apply.sh`: `git config core.hooksPath .githooks`
 
 ### MCP servers (per-tool config via `tools/gen-mcp.py`)
-Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` / `.cursor/mcp.json` / `.codex/config.toml`). Stack-specific servers → [PROFILES.md](PROFILES.md).
+Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
+
+### Code graph + token economy (CodeGraph)
+Local symbol/call/import graph that both Claude Code & Codex query over MCP instead of grep/read sweeps — ~−47% tokens, −58% tool calls, 100% local. Install once: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then `codegraph install` (auto-wires both tools), then `codegraph init` per repo (`apply.sh` runs the last two if `codegraph` is on PATH). Token rules live in `RULES.md` → **Token economy**.
 
 ### Plugins (Claude Code — installed by `apply.sh`)
 `obra/superpowers` (workflow), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat).
@@ -40,15 +42,15 @@ Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATA
 ### Hooks (Claude Code & Codex — `.claude/hooks/`)
 | Script | Trigger | Does |
 |--------|---------|------|
-| `protect-secrets.sh` | Read/Write/Edit | block `.env`/`.pem`/`.key`/credentials |
-| `block-dangerous.sh` | Bash | block recursive-rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb |
+| `protect-secrets.sh` | Read/Write/Edit | block `.env`/`.pem`/`.key`/credentials (allows `*.example`) |
+| `block-dangerous.sh` | Bash | recursive-rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb — **+ rm/mv/truncate of `.env` & `git clean -f`** |
 | `log-bash.sh` | Bash | log commands to `.claude/bash.log` |
 | `auto-format.sh` | Edit/Write | prettier/black/ruff/gofmt if installed |
 | `pre-pr-gate.sh` | create_pull_request | block PR if tests fail |
 | done-notify | Stop | macOS notification / terminal bell |
 
 ### Skills (lean by design)
-Base bundles only `find-skills` (discovers/installs any other skill on demand). Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal. Token discipline comes from model-tier routing (`prompts/subagent.md`), `/compact`, and `/cost-review` — not from output-compression skills.
+Base bundles `find-skills` (discovers/installs any other on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal. Token discipline comes from CodeGraph, model-tier routing (`prompts/subagent.md`), `/compact`, and `/cost-review` — not from output-compression skills.
 
 ### Prompts (`prompts/` — paste into any tool)
 `grill-me` (requirements interview), `sparc` (5-phase build), `tdd` (RED-GREEN-REFACTOR), `diagnose` (8-step debug), `to-issues` (plan → issues), `zoom-out` (system map), `security-scan` (OWASP + secrets + PII), `risk-review` (diff risk classifier), `preflight` (pre-ship checklist), `audit` (periodic repo health), `adr` (architecture decision record), `memorize` (append to `MEMORY.md`), `learn` (append to `LESSONS.md`), `subagent` (when to delegate + Haiku/Sonnet/Opus tier routing), `cost-review` (token/spend check), `assess-capabilities` (acquire skills/MCP/plugins for a project/feature), `adopt-harness` (adopt into existing project + clean up). Claude/Codex get the same as `/slash` commands.

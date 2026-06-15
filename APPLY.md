@@ -4,7 +4,7 @@
 
 ## Apply (from the project root)
 ```bash
-# TOOL = claude | codex | cursor | windsurf | gemini | copilot | cline | all
+# TOOL = claude | codex | all   (this harness targets Claude Code + Codex)
 TOOL=<your-tool> bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 ```
 Tool not listed → `TOOL=all`, then read [HARNESS.md](HARNESS.md) to finish wiring it up.
@@ -15,12 +15,13 @@ No curl? `gh repo clone klaachkinggit/klaach_harness /tmp/harness` and copy the 
 | Component | Where | Who reads it |
 |-----------|-------|-------------|
 | Rules | per-tool file (see HARNESS.md) | your tool, auto-loaded |
-| MCP config | per-tool via `gen-mcp.py` (`.mcp.json` / `.cursor/mcp.json` / `.codex/config.toml`) | your tool |
+| MCP config | per-tool via `gen-mcp.py` (`.mcp.json` Claude / `.codex/config.toml` Codex) | your tool |
 | Prompts | `prompts/` | any tool (paste) |
 | Git hooks + CI | `.githooks/`, `.github/workflows/ci.yml` | git / GitHub — any tool or human |
 | Slash commands | `.claude/commands/` | Claude Code |
 | Runtime hooks | `.claude/hooks/` + `.claude/settings.json` (Claude) / `.codex/hooks.json` (Codex) | Claude Code, Codex |
-| Skills | `.claude/skills/` (find-skills) | Claude Code, Codex |
+| Skills | `.claude/skills/` (find-skills + front-end design set) | Claude Code, Codex |
+| Code graph | CodeGraph — `codegraph install` + `init` (run by apply.sh if on PATH) | Claude Code, Codex (MCP) |
 
 ## After applying — VERIFY (don't skip)
 Setup can fail partially (missing token, network, CLI mismatch). `apply.sh` prints a `⚠️ FAILED` block if so — read it. Then:

@@ -26,21 +26,15 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 |------|------|--------------------|
 | Claude Code | `CLAUDE.md` | `${VAR}` |
 | Codex CLI | `AGENTS.md` | none — forward by name (`env_vars`) |
-| Cursor | `.cursorrules` + `.cursor/rules/*.mdc` | `${env:VAR}` |
-| Windsurf | `.windsurfules` | `${env:VAR}` |
-| Gemini CLI | `GEMINI.md` | `$VAR` |
-| Copilot | `.github/copilot-instructions.md` | n/a (VS Code) |
-| Cline | `.clinerules` | varies |
 | Not listed? | copy `RULES.md` into your system prompt | check your docs |
+
+> This harness targets **Claude Code + Codex**. Other tools' rule files (Gemini, Cursor, Windsurf, Cline, Copilot) are archived in `.harness-archive/` — regenerate any of them from `RULES.md` if you re-add a tool.
 
 ## MCP — getting servers into your tool
 `tools/gen-mcp.py` is the single source; it emits the right format/path:
 ```bash
 python3 tools/gen-mcp.py claude    # → .mcp.json           (root)
-python3 tools/gen-mcp.py cursor    # → .cursor/mcp.json
 python3 tools/gen-mcp.py codex     # → .codex/config.toml  (TOML)
-python3 tools/gen-mcp.py windsurf  # → prints ~/.codeium/windsurf/mcp_config.json snippet
-python3 tools/gen-mcp.py gemini    # → prints ~/.gemini/settings.json snippet
 ```
 Base servers: `github`, `filesystem`, `git`, `playwright`, `db` (if `DATABASE_URL` set).
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Docker, Stripe, …) → PROFILES.md, or discover live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
@@ -54,8 +48,8 @@ Shared scripts in `.claude/hooks/` read the tool-call as JSON on stdin, exit `2`
 
 | Script | Blocks / does |
 |--------|--------------|
-| `block-dangerous.sh` | recursive rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb, mkfs, dd-to-disk |
-| `protect-secrets.sh` | read/write/edit of `.env`/`.pem`/`.key`/credentials |
+| `block-dangerous.sh` | recursive rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb, mkfs, dd-to-disk; **+ rm/mv/truncate of `.env`/`.env.local` and `git clean -f`** (append `>>`, `cp` restore, and `.env.example` stay allowed) |
+| `protect-secrets.sh` | read/write/edit of `.env`/`.pem`/`.key`/credentials via the file tools; **allows `*.example` templates** |
 | `auto-format.sh` | prettier/black/ruff/gofmt/rustfmt on edited files |
 | `log-bash.sh` | logs commands to `.claude/bash.log` |
 | `pre-pr-gate.sh` | blocks PR if tests fail |
@@ -68,8 +62,14 @@ Shared scripts in `.claude/hooks/` read the tool-call as JSON on stdin, exit `2`
 
 This is *why* the harness is model-agnostic on enforcement: the guarantees hold at git/CI regardless of which agent (or human) wrote the code.
 
+## Code graph + token economy — CodeGraph
+The single biggest token saver: a local, pre-indexed symbol/call/import graph that both Claude Code and Codex query over MCP instead of fanning out grep/read sweeps (~−47% tokens, −58% tool calls; 100% local, no embeddings API).
+- **Install once (per machine):** `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then in a NEW terminal `codegraph install` (auto-wires the MCP into Claude Code + Codex).
+- **Per project:** `codegraph init` builds `.codegraph/` (gitignored) and auto-syncs on edits. `apply.sh`'s CodeGraph step runs both if `codegraph` is on PATH.
+- **Use it:** `codegraph_search` / `codegraph_explore` to find symbols, callers, and blast radius before reading files; `codegraph_status` to confirm sync. See the **Token economy** rules in `RULES.md`.
+
 ## Skills — lean on purpose
-Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles only `find-skills` (installs any other skill on demand). Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
+Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles `find-skills` (installs any other skill on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
 
 Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
 

@@ -5,7 +5,7 @@
 #   bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 #
 # Non-interactive (for agents):
-#   TOOL=claude|codex|cursor|windsurf|gemini|copilot|cline|all  bash <(curl -fsSL .../apply.sh)
+#   TOOL=claude|codex|all  bash <(curl -fsSL .../apply.sh)
 #
 # If your tool isn't listed: use TOOL=all, then read HARNESS.md — it maps every
 # layer to the mechanism your tool uses, so you can wire it up yourself.
@@ -22,12 +22,10 @@ echo ""
 # ── Tool selection ────────────────────────────────────────────
 if [ -z "${TOOL:-}" ]; then
   echo "Which AI coding tool?"
-  echo "  1) Claude Code   2) Codex CLI   3) Cursor   4) Windsurf"
-  echo "  5) Gemini CLI    6) Copilot     7) Cline     8) All / Other"
-  read -rp "Choice [1-8]: " CHOICE
+  echo "  1) Claude Code  2) Codex CLI  3) Both"
+  read -rp "Choice [1-3]: " CHOICE
   case "$CHOICE" in
-    1) TOOL="claude" ;; 2) TOOL="codex" ;; 3) TOOL="cursor" ;; 4) TOOL="windsurf" ;;
-    5) TOOL="gemini" ;; 6) TOOL="copilot" ;; 7) TOOL="cline" ;; *) TOOL="all" ;;
+    1) TOOL="claude" ;; 2) TOOL="codex" ;; *) TOOL="all" ;;
   esac
 fi
 
@@ -45,49 +43,35 @@ fetch_hooks() {  # shared hook scripts (used by both Claude Code and Codex)
   done
 }
 
-# ── [1/5] Rules ───────────────────────────────────────────────
-echo "[1/5] Rules..."
+# ── [1/6] Rules ───────────────────────────────────────────────
+echo "[1/6] Rules..."
 case "$TOOL" in
-  claude)   fetch_safe "CLAUDE.md" "CLAUDE.md" ;;
-  codex)    fetch_safe "AGENTS.md" "AGENTS.md" ;;
-  cursor)   fetch_safe "RULES.md" ".cursorrules"; fetch_safe ".cursor/rules/harness.mdc" ".cursor/rules/harness.mdc" ;;
-  windsurf) fetch_safe "RULES.md" ".windsurfules" ;;
-  gemini)   fetch_safe "RULES.md" "GEMINI.md" ;;
-  copilot)  fetch_safe "RULES.md" ".github/copilot-instructions.md" ;;
-  cline)    fetch_safe "RULES.md" ".clinerules" ;;
-  all|*)
-    fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md"
-    fetch_safe "RULES.md" "GEMINI.md"; fetch_safe "RULES.md" ".cursorrules"
-    fetch_safe "RULES.md" ".windsurfules"; fetch_safe "RULES.md" ".clinerules"
-    fetch_safe "RULES.md" ".github/copilot-instructions.md"
-    fetch_safe ".cursor/rules/harness.mdc" ".cursor/rules/harness.mdc" ;;
+  claude)  fetch_safe "CLAUDE.md" "CLAUDE.md" ;;
+  codex)   fetch_safe "AGENTS.md" "AGENTS.md" ;;
+  all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md" ;;
 esac
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 
-# ── [2/5] Prompts (universal) ─────────────────────────────────
-echo "[2/5] Prompts..."
+# ── [2/6] Prompts (universal) ─────────────────────────────────
+echo "[2/6] Prompts..."
 mkdir -p prompts
 for p in adopt-harness adr assess-capabilities audit cost-review diagnose grill-me \
          learn memorize preflight risk-review security-scan sparc subagent tdd to-issues zoom-out; do
   fetch "prompts/${p}.md" > "prompts/${p}.md"
 done
 
-# ── [3/5] MCP config (per-tool format) ────────────────────────
-echo "[3/5] MCP config..."
+# ── [3/6] MCP config (per-tool format) ────────────────────────
+echo "[3/6] MCP config..."
 mkdir -p tools && fetch "tools/gen-mcp.py" > tools/gen-mcp.py
 gen_mcp() { python3 tools/gen-mcp.py "$1"; }
 case "$TOOL" in
-  claude)   gen_mcp claude ;;
-  codex)    gen_mcp codex ;;
-  cursor)   gen_mcp cursor ;;
-  windsurf) gen_mcp windsurf ;;
-  gemini)   gen_mcp gemini ;;
-  copilot|cline) fetch_safe ".mcp.json" ".mcp.json"; echo "  wrote .mcp.json (generic — see HARNESS.md for your tool's path)" ;;
-  all|*)    gen_mcp claude; gen_mcp cursor; gen_mcp codex ;;
+  claude)  gen_mcp claude ;;
+  codex)   gen_mcp codex ;;
+  all|*)   gen_mcp claude; gen_mcp codex ;;
 esac
 
-# ── [4/5] Universal git + CI enforcement (works under ANY tool) ──
-echo "[4/5] Git + CI enforcement..."
+# ── [4/6] Universal git + CI enforcement (works under ANY tool) ──
+echo "[4/6] Git + CI enforcement..."
 mkdir -p .githooks
 for gh in pre-commit pre-push; do
   fetch ".githooks/${gh}" > ".githooks/${gh}"; chmod +x ".githooks/${gh}"
@@ -106,13 +90,15 @@ else
   echo "  not a git repo — run 'git init' then 'git config core.hooksPath .githooks'"
 fi
 
-# ── [5/5] Tool-specific runtime (hooks, commands, plugins) ────
-echo "[5/5] Runtime extras..."
+# ── [5/6] Tool-specific runtime (hooks, commands, plugins) ────
+echo "[5/6] Runtime extras..."
 PLUGIN_FAILED=()
 
-fetch_skills() {  # discovery skill (Claude Code & Codex both support skills)
-  mkdir -p .claude/skills/find-skills
-  fetch ".claude/skills/find-skills/SKILL.md" > .claude/skills/find-skills/SKILL.md
+fetch_skills() {  # Claude Code & Codex both support skills
+  for skill in find-skills ui-ux-pro-max impeccable awesome-design-md frontend-design web-design-guidelines; do
+    mkdir -p ".claude/skills/${skill}"
+    fetch ".claude/skills/${skill}/SKILL.md" > ".claude/skills/${skill}/SKILL.md"
+  done
 }
 
 setup_claude_runtime() {
@@ -165,8 +151,21 @@ case "$TOOL" in
   claude) setup_claude_runtime ;;
   codex)  setup_codex_runtime ;;
   all)    setup_claude_runtime; setup_codex_runtime ;;
-  *)      echo "  none for $TOOL — rules, prompts, MCP, and git/CI cover it." ;;
 esac
+
+# ── [6/6] CodeGraph (code graph + token saver) ───────────────
+echo "[6/6] CodeGraph (code graph + token saver)..."
+if command -v codegraph >/dev/null 2>&1; then
+  codegraph install || true
+  codegraph init || true
+  echo "  CodeGraph installed and index built (.codegraph/)."
+else
+  echo "  codegraph not found. Manual setup:"
+  echo "    curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"
+  echo "    Then in a new terminal: codegraph install   (auto-wires Claude Code + Codex MCP)"
+  echo "    Then: codegraph init                        (builds the local .codegraph/ index)"
+  echo "  Optional but recommended: ~-47% tokens / fewer tool calls. 100% local."
+fi
 
 # ── Summary + verification ────────────────────────────────────
 echo ""

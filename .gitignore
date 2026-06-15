@@ -41,3 +41,6 @@ MEMORY.md
 reddit.json
 reddit-comments.txt
 500
+
+# CodeGraph per-project index (rebuilt by `codegraph init`)
+.codegraph/
