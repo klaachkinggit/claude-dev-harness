@@ -24,6 +24,7 @@ SERVERS = [
     {"name": "filesystem", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "."], "env": None},
     {"name": "git",        "command": "npx", "args": ["-y", "@modelcontextprotocol/server-git", "."], "env": None},
     {"name": "playwright", "command": "npx", "args": ["-y", "@playwright/mcp"], "env": None},
+    {"name": "sequential-thinking", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"], "env": None},
 ]
 
 if os.environ.get("DATABASE_URL"):

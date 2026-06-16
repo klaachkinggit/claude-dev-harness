@@ -42,7 +42,7 @@ python3 tools/gen-mcp.py codex     # → .codex/config.toml  (TOML)
 python3 tools/gen-mcp.py windsurf  # → prints ~/.codeium/windsurf/mcp_config.json snippet
 python3 tools/gen-mcp.py gemini    # → prints ~/.gemini/settings.json snippet
 ```
-Base servers: `github`, `filesystem`, `git`, `playwright`, `db` (if `DATABASE_URL` set).
+Base servers: `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `db` (if `DATABASE_URL` set).
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Docker, Stripe, …) → PROFILES.md, or discover live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
 
 ## Runtime hooks — Claude Code & Codex
@@ -71,7 +71,7 @@ This is *why* the harness is model-agnostic on enforcement: the guarantees hold 
 ## Skills — lean on purpose
 Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles only `find-skills` (installs any other skill on demand). Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
 
-Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
+Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), Ponytail's YAGNI pressure, and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
 
 ## Prompts
 `prompts/*.md` — plain markdown, paste anywhere; or `/slash` commands in Claude/Codex (Codex: drop into `~/.codex/prompts/`). List in README.

@@ -12,8 +12,8 @@ A description of the project, or the feature about to be built.
    (e.g. Vercel/Next.js, Docker, Stripe, Supabase, Sentry, AWS, Postgres, Figma).
 2. **Check what the base already covers — do NOT re-add these:**
    - Skills/prompts: grill-me, tdd, diagnose, zoom-out, security-scan, preflight, to-issues
-   - MCP servers: **github, filesystem, git, playwright, db (Postgres)** are already configured
-   - Workflow: Superpowers (plugin)
+   - MCP servers: **github, filesystem, git, playwright, sequential-thinking, db (Postgres)** are already configured
+   - Plugins: Superpowers, Ponytail, and Context7 are already configured where the tool supports plugins
 3. **For genuine gaps, assess all three layers:**
    - **Skill?** Invoke `find-skills` / `npx skills find "<need>"`; check skills.sh + PROFILES.md.
    - **MCP server?** Many stacks have one (Vercel, Docker, Stripe, Supabase, Sentry, Linear, Notion, Figma…). See PROFILES.md "MCP servers by stack", or browse the official registry / awesome-mcp-servers / `/plugin` Discover tab.

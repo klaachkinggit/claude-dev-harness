@@ -32,10 +32,10 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 - Activated by `apply.sh`: `git config core.hooksPath .githooks`
 
 ### MCP servers (per-tool config via `tools/gen-mcp.py`)
-Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` / `.cursor/mcp.json` / `.codex/config.toml`). Stack-specific servers → [PROFILES.md](PROFILES.md).
+Base set: `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` / `.cursor/mcp.json` / `.codex/config.toml`). Stack-specific servers → [PROFILES.md](PROFILES.md).
 
 ### Plugins (Claude Code — installed by `apply.sh`)
-`obra/superpowers` (workflow), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat).
+`obra/superpowers` (workflow), `DietrichGebert/ponytail` (minimalist/token-discipline guardrails), `upstash/context7` (current library docs), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat). Codex gets `ponytail` and `context7` through its plugin marketplace.
 
 ### Hooks (Claude Code & Codex — `.claude/hooks/`)
 | Script | Trigger | Does |
