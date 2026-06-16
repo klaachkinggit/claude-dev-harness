@@ -16,7 +16,7 @@ discovery skill or the direct install commands below.
 | Enforcement (boundary) | `.githooks/`, `.github/workflows/ci.yml` | add jobs to CI |
 | Runtime safety (Claude/Codex) | provider mirrors: `.claude/hooks/`, `.codex/hooks/` | add behavior-equivalent hooks to both mirrors |
 | Skill discovery | `find-skills` | profiles below |
-| Token discipline | Lean-skills rule (HARNESS.md:72), `/compact`, **model-tier routing in `prompts/subagent.md`** (Haiku/Sonnet/Opus), `/cost-review` | — (see "Don't install" below) |
+| Token discipline | Lean-skills rule (HARNESS.md:72), `/compact`, **model-tier routing in `prompts/subagent.md`** (Haiku/Sonnet/Opus), Ponytail, `/cost-review` | — (see "Don't install" below) |
 | Subagent delegation | `prompts/subagent.md` — when to spawn + which model tier | — (model-agnostic guidance, no runtime) |
 | Cross-session memory | `MEMORY.md` + `prompts/memorize.md` | append entries; archive quarterly |
 | Self-learning (heuristics) | `LESSONS.md` + `prompts/learn.md` | append only non-obvious lessons with a usable "next time" rule |
@@ -24,8 +24,8 @@ discovery skill or the direct install commands below.
 | Methodology | `prompts/sparc.md` (5-phase) + Superpowers (plugin) | swap workflow skills, don't stack |
 | Risk classification | `prompts/risk-review.md` (per-diff dimension scoring) | run before `/preflight` on auth/data/infra changes |
 | Periodic checks | `prompts/audit.md` (manual / on cadence) | wire to scheduled CI if needed |
-| MCP base | github, filesystem, git, playwright, db | stack-specific table below |
-| Plugins base | superpowers, anthropics (claude-api + document-skills), trailofbits marketplace registered (opt-in) | stack-specific table below |
+| MCP base | github, filesystem, git, playwright, sequential-thinking, db | stack-specific table below |
+| Plugins base | superpowers, ponytail, context7, anthropics (claude-api + document-skills), trailofbits marketplace registered (opt-in) | stack-specific table below |
 
 ## How this differs from `find-skills`
 - **`find-skills` = discovery.** Live, ranked-by-installs search of the skills.sh
@@ -45,7 +45,7 @@ against the r/ClaudeAI "best skills" thread + the harness's own layers.)
 | a custom debug/root-cause skill (e.g. myclaude `dendrite`, `five-vitals`) | `diagnose`, `zoom-out` |
 | a commit gate / secret scanner / formatter skill | the git hooks (`.githooks/`) + `security-scan` |
 | an issue-creation / spec skill (Matt Pocock "QA Session") | `to-issues`, `grill-me` |
-| caveman-style "token saver" skills | nothing — thread consensus: trims output only, not thinking ("meme skill") |
+| output-only compression gimmicks | Ponytail + model-tier routing + `/compact`; don't add style-only compression layers |
 | context-engineering kits | redundant unless the *project itself* builds LLM agents |
 | self-mutating / auto-tuning meta-skills (e.g. one-skill-to-rule-them-all) | overlaps harness hooks/memory; thread warns auto-mutation regresses quietly |
 | a second workflow skill alongside Superpowers | swap, don't stack (see "Project workflow") |
@@ -160,9 +160,10 @@ community one needs `/plugin marketplace add anthropics/claude-plugins-community
 | Vercel / Next.js | `vercel/vercel-plugin` | `npx plugins add vercel/vercel-plugin` | Official Vercel — 25 skills + 3 agents + 5 commands; auto-injects in Vercel/Next.js projects. **This is "the Vercel plugin."** |
 | Pre-configured MCP (one-command) | `<name>@claude-plugins-official` | `/plugin install vercel@claude-plugins-official` | github, gitlab, vercel, firebase, supabase, sentry, linear, notion, figma, slack, asana, atlassian |
 | Language intelligence (LSP) | `<lang>-lsp@claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` | ts, pyright, gopls, rust-analyzer, clangd, … — auto-diagnostics after edits |
-| Version-correct library docs | `upstash/context7` | via `/plugin` or MCP | Injects version-specific docs (React/Next/Prisma/…); community |
+| Version-correct library docs | `upstash/context7` | installed by `apply.sh`; manual: `claude plugin marketplace add upstash/context7 && claude plugin install context7@context7-marketplace` or `codex plugin marketplace add upstash/context7 && codex plugin add context7@context7-marketplace` | Injects version-specific docs (React/Next/Prisma/…); community |
 
 **Already installed by `apply.sh` — don't re-add:** `obra/superpowers`,
+`DietrichGebert/ponytail`, `upstash/context7`,
 `anthropics/skills@claude-api`, `anthropics/skills@document-skills`. The
 `trailofbits/skills` marketplace is also pre-registered — pick specific
 plugins from it on demand (`claude plugin install <name>@trailofbits`).

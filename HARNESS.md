@@ -37,7 +37,7 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 python3 tools/gen-mcp.py claude    # → .mcp.json           (root)
 python3 tools/gen-mcp.py codex     # → .codex/config.toml  (TOML)
 ```
-Base servers: `github`, `filesystem`, `git`, `playwright`, `db` (if `DATABASE_URL` set).
+Base servers: `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `db` (if `DATABASE_URL` set).
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Docker, Stripe, …) → PROFILES.md, or discover live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
 
 ## Runtime hooks — Claude Code & Codex
@@ -72,7 +72,7 @@ The single biggest token saver: a local, pre-indexed symbol/call/import graph th
 ## Skills — lean on purpose
 Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles `find-skills` (installs any other skill on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. The base set is intentionally mirrored in `.claude/skills/` and `.codex/skills/`; keep both mirrors in sync. Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
 
-Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
+Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), Ponytail's YAGNI pressure, and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
 
 ## Prompts
 `prompts/*.md` — plain markdown, paste anywhere. Claude gets thin wrappers in `.claude/commands/`; Codex uses the shared prompt bodies directly or user-level `~/.codex/prompts/`. List in README.

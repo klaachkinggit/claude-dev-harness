@@ -121,7 +121,9 @@ setup_claude_runtime() {
     for entry in \
       "obra/superpowers:superpowers-dev:superpowers" \
       "anthropics/skills:anthropic-agent-skills:claude-api" \
-      "anthropics/skills:anthropic-agent-skills:document-skills"; do
+      "anthropics/skills:anthropic-agent-skills:document-skills" \
+      "DietrichGebert/ponytail:ponytail:ponytail" \
+      "upstash/context7:context7-marketplace:context7"; do
       IFS=':' read -r repo market plugin <<< "$entry"
       claude plugin marketplace add "$repo" >/dev/null 2>&1 || true
       if claude plugin install "${plugin}@${market}" >/dev/null 2>&1; then
@@ -145,6 +147,23 @@ setup_codex_runtime() {
   fetch_hooks ".codex"
   fetch_skills ".codex"
   fetch_safe ".codex/hooks.json" ".codex/hooks.json"
+  if command -v codex >/dev/null 2>&1; then
+    echo "  installing Codex plugins..."
+    for entry in \
+      "DietrichGebert/ponytail:ponytail:ponytail" \
+      "upstash/context7:context7-marketplace:context7"; do
+      IFS=':' read -r repo market plugin <<< "$entry"
+      codex plugin marketplace add "$repo" >/dev/null 2>&1 || true
+      if codex plugin add "${plugin}@${market}" >/dev/null 2>&1; then
+        echo "    ✓ ${plugin}@${market}"
+      else
+        echo "    ✗ ${plugin}@${market}"
+        PLUGIN_FAILED+=("${plugin}@${market}")
+      fi
+    done
+  else
+    echo "  codex CLI not found — skipping plugins (rules+prompts+hooks still active)"
+  fi
   echo "  Codex hooks written to .codex/hooks.json and .codex/hooks/."
   echo "  VERIFY hook stdin field names match your Codex version — see HARNESS.md."
 }
