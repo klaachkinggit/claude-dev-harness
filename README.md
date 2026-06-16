@@ -31,13 +31,22 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 - Activated by `apply.sh`: `git config core.hooksPath .githooks`
 
 ### MCP servers (per-tool config via `tools/gen-mcp.py`)
-Base set: `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
+Base set: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
 
 ### Code graph + token economy (CodeGraph)
 Local symbol/call/import graph that both Claude Code & Codex query over MCP instead of grep/read sweeps — ~−47% tokens, −58% tool calls, 100% local. Install once: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then `codegraph install` (auto-wires both tools), then `codegraph init` per repo (`apply.sh` runs the last two if `codegraph` is on PATH). Token rules live in `RULES.md` → **Token economy**.
 
-### Plugins (Claude Code — installed by `apply.sh`)
-`obra/superpowers` (workflow), `DietrichGebert/ponytail` (minimalist/token-discipline guardrails), `upstash/context7` (current library docs), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat). Codex gets `ponytail` and `context7` through its plugin marketplace.
+### Profiles (project-local optional MCPs)
+`apply.sh` does not install user-level plugins or skills. Optional stack MCPs are added per project:
+
+```bash
+tools/apply-profile.sh vercel
+tools/apply-profile.sh supabase
+tools/apply-profile.sh stripe
+tools/apply-profile.sh figma
+```
+
+Use `tools/audit-capabilities.sh` to verify provider mirrors, MCP config, and the no user-level resources rule.
 
 ### Hooks (Claude Code & Codex provider mirrors)
 | Script | Trigger | Does |
@@ -53,7 +62,7 @@ Claude reads `.claude/settings.json` + `.claude/hooks/`; Codex reads
 `.codex/hooks.json` + `.codex/hooks/`.
 
 ### Skills (lean by design)
-Base bundles `find-skills` (discovers/installs any other on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. The same lean set is mirrored in `.claude/skills/` and `.codex/skills/`; keep those mirrors in sync. Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal. Token discipline comes from CodeGraph, model-tier routing (`prompts/subagent.md`), `/compact`, and `/cost-review` — not from output-compression skills.
+Base bundles `find-skills` (discovers/installs any other on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. The same lean set is mirrored in `.claude/skills/` and `.codex/skills/`; keep those mirrors in sync. Matt Pocock-style routines (`grill-me`, `tdd`, `diagnose`, `zoom-out`, `to-issues`) live as portable prompts, not user-level skills. Niche skills are per-project — see [PROFILES.md](PROFILES.md). Skill descriptions tax every session's context, so the base stays minimal. Token discipline comes from CodeGraph, model-tier routing (`prompts/subagent.md`), `/compact`, and `/cost-review` — not from output-compression skills.
 
 ### Prompts (`prompts/` — paste into any tool)
 `grill-me` (requirements interview), `sparc` (5-phase build), `tdd` (RED-GREEN-REFACTOR), `diagnose` (8-step debug), `to-issues` (plan → issues), `zoom-out` (system map), `security-scan` (OWASP + secrets + PII), `risk-review` (diff risk classifier), `preflight` (pre-ship checklist), `audit` (periodic repo health), `adr` (architecture decision record), `memorize` (append to `MEMORY.md`), `learn` (append to `LESSONS.md`), `subagent` (when to delegate + Haiku/Sonnet/Opus tier routing), `cost-review` (token/spend check), `assess-capabilities` (acquire skills/MCP/plugins for a project/feature), `adopt-harness` (adopt into existing project + clean up). Claude gets thin `.claude/commands/` wrappers; Codex uses the shared `prompts/` bodies.

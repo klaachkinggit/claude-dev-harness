@@ -13,6 +13,7 @@ Env vars: GITHUB_TOKEN (required for github), DATABASE_URL (optional → adds db
 """
 import json
 import os
+import re
 import sys
 
 # ── Single source of truth ────────────────────────────────────
@@ -20,7 +21,7 @@ import sys
 SERVERS = [
     {"name": "github",     "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": "GITHUB_TOKEN", "env_key": "GITHUB_PERSONAL_ACCESS_TOKEN"},
     {"name": "filesystem", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "."], "env": None},
-    {"name": "git",        "command": "npx", "args": ["-y", "@modelcontextprotocol/server-git", "."], "env": None},
+    {"name": "git",        "command": "uvx", "args": ["mcp-server-git", "--repository", "."], "env": None},
     {"name": "playwright", "command": "npx", "args": ["-y", "@playwright/mcp"], "env": None},
     {"name": "sequential-thinking", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"], "env": None},
 ]
@@ -62,19 +63,32 @@ def emit_codex():
         lines.append("")
     os.makedirs(".codex", exist_ok=True)
     body = "\n".join(lines)
-    # Append to .codex/config.toml if present, else create.
     path = ".codex/config.toml"
     existing = ""
     if os.path.exists(path):
         with open(path) as f:
             existing = f.read()
-        if "[mcp_servers." in existing:
-            print("  %s already has mcp_servers — printing block to merge manually:\n" % path)
-            print(body)
-            return
+        existing = _without_managed_codex_servers(existing)
     with open(path, "w") as f:
-        f.write((existing + "\n" if existing else "") + body)
+        f.write((existing.rstrip() + "\n\n" if existing.strip() else "") + body + "\n")
     print("  wrote %s" % path)
+
+
+def _without_managed_codex_servers(text):
+    managed = {s["name"] for s in SERVERS}
+    kept = []
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        match = re.match(r"\[mcp_servers\.([^\]]+)\]", lines[i])
+        if match and match.group(1) in managed:
+            i += 1
+            while i < len(lines) and not lines[i].startswith("["):
+                i += 1
+            continue
+        kept.append(lines[i])
+        i += 1
+    return "\n".join(kept)
 
 
 def _write(path, content):

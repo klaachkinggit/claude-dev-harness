@@ -12,3 +12,13 @@ Append-only log of heuristics learned. Read at session start alongside `MEMORY.m
 - **Next time:** the heuristic future-you will actually re-read.
 
 -->
+
+## 2026-06-16 — idempotent generated config  [tools]
+- **Saw:** Codex MCP config kept an obsolete generated `git` server because `tools/gen-mcp.py` refused to update existing `mcp_servers`.
+- **Why:** Manual-merge output is not a real harness fix; applied projects keep stale generated sections.
+- **Next time:** Generators should replace their managed sections and preserve custom sections, not print blocks for humans to merge.
+
+## 2026-06-16 — mirror behavior, not byte-for-byte files  [tools]
+- **Saw:** Claude and Codex hook mirrors failed a strict diff even though provider-local paths legitimately differ.
+- **Why:** Mirror parity means equivalent capability surfaces, not identical implementation text when providers need different wiring.
+- **Next time:** Audits should compare shared names/contracts and then validate provider-specific config separately.

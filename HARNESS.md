@@ -17,7 +17,7 @@ a faster copy for tools that support them.
 | Git hooks + CI | block secrets, format, gate tests | ✅ any tool or human |
 | Runtime hooks | block dangerous cmds/secrets mid-session | ❌ Claude Code + Codex only |
 | Slash commands | prompts as `/commands` | ❌ Claude Code + Codex only |
-| Plugins | curated packs | ❌ Claude Code only |
+| Optional plugins | curated packs | ❌ tool-specific, not base-loaded |
 
 ## Rules file — where your tool reads instructions
 Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syntax differ.
@@ -37,7 +37,7 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 python3 tools/gen-mcp.py claude    # → .mcp.json           (root)
 python3 tools/gen-mcp.py codex     # → .codex/config.toml  (TOML)
 ```
-Base servers: `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `db` (if `DATABASE_URL` set).
+Base servers: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `db` (if `DATABASE_URL` set).
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Docker, Stripe, …) → PROFILES.md, or discover live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
 
 ## Runtime hooks — Claude Code & Codex
@@ -70,12 +70,12 @@ The single biggest token saver: a local, pre-indexed symbol/call/import graph th
 - **Use it:** `codegraph_search` / `codegraph_explore` to find symbols, callers, and blast radius before reading files; `codegraph_status` to confirm sync. See the **Token economy** rules in `RULES.md`.
 
 ## Skills — lean on purpose
-Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles `find-skills` (installs any other skill on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. The base set is intentionally mirrored in `.claude/skills/` and `.codex/skills/`; keep both mirrors in sync. Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
+Descriptions load into context every session (past ~1% of the window they truncate + mis-activate). Base bundles `find-skills` (installs any other skill on demand) plus a **front-end set** for UI work — `frontend-design`, `ui-ux-pro-max`, `impeccable`, `web-design-guidelines`, `awesome-design-md`. Matt Pocock-style routines live as portable prompts (`grill-me`, `tdd`, `diagnose`, `zoom-out`, `to-issues`) instead of repo-vendored skill files. The base set is intentionally mirrored in `.claude/skills/` and `.codex/skills/`; keep both mirrors in sync. Everything else is per-project — see PROFILES.md, or ask *"find a skill for X"*. Prune skills unused for ~2 weeks.
 
-Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), Ponytail's YAGNI pressure, and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
+Token discipline comes from the **lean-skills rule above**, `/compact` between work phases, `prompts/subagent.md`'s **model tier routing** (Haiku/Sonnet/Opus per task), YAGNI pressure in the base rules, and `/cost-review` — *not* from output-compression skills (see PROFILES.md "Don't install").
 
 ## Prompts
-`prompts/*.md` — plain markdown, paste anywhere. Claude gets thin wrappers in `.claude/commands/`; Codex uses the shared prompt bodies directly or user-level `~/.codex/prompts/`. List in README.
+`prompts/*.md` — plain markdown, paste anywhere. Claude gets thin wrappers in `.claude/commands/`; Codex uses the shared project-local prompt bodies directly. List in README.
 
 ## Brand-new tool with none of these mechanisms?
 Minimum viable adoption, in order:

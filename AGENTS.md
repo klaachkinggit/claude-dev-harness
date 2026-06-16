@@ -52,7 +52,7 @@
 ## Token economy
 
 - **Navigate with the code graph, not blind sweeps.** Use the CodeGraph MCP (`codegraph_search`, `codegraph_explore`, `codegraph_node`) to find symbols, callers, and blast radius before reading files — it replaces multi-call grep/read fans (~−47% tokens, −58% tool calls; 100% local). Build/refresh per repo with `codegraph init`; it auto-syncs on edits.
-- **Use the added thinking/docs plugins deliberately.** Sequential-thinking is available for complex planning, Ponytail for YAGNI pressure, and Context7 for current library docs; avoid invoking them for trivial edits.
+- **Use optional capabilities deliberately.** Sequential-thinking is available for complex planning; stack MCPs and docs plugins should be added only per project when they clearly help.
 - **Read semantically, not wholesale.** Prefer graph/symbol lookups and scoped reads (offset/limit) over whole-file dumps; for one-shot whole-repo context use `repomix`.
 - **Route by cost.** Cheap model (mini tier) for search, summaries, bounded lookups; reserve the strong model for design, architecture, and review.
 - **Keep the cache warm.** Rules files load every turn and are prompt-cached — keep them stable; don't mutate per-session. Heavy procedures live in skills/prompts (lazy-loaded), not here.
@@ -69,7 +69,6 @@ Full sentences. Explicit confirmation required. Never skip hooks. Never force-pu
 - Keep `.codex/skills/` and `.claude/skills/` mirrored. Codex loads `.codex`; Claude loads `.claude`.
 - Shared workflow bodies live in `prompts/`. Claude slash commands in `.claude/commands/` should stay thin wrappers to those files.
 - Do not restore `.agents/` or in-repo harness archive folders. Use git history for removed harness files.
-
 
 ---
 <!-- Add project-specific rules below this line -->

@@ -16,16 +16,16 @@ discovery skill or the direct install commands below.
 | Enforcement (boundary) | `.githooks/`, `.github/workflows/ci.yml` | add jobs to CI |
 | Runtime safety (Claude/Codex) | provider mirrors: `.claude/hooks/`, `.codex/hooks/` | add behavior-equivalent hooks to both mirrors |
 | Skill discovery | `find-skills` | profiles below |
-| Token discipline | Lean-skills rule (HARNESS.md:72), `/compact`, **model-tier routing in `prompts/subagent.md`** (Haiku/Sonnet/Opus), Ponytail, `/cost-review` | — (see "Don't install" below) |
+| Token discipline | Lean-skills rule (HARNESS.md:72), `/compact`, **model-tier routing in `prompts/subagent.md`** (Haiku/Sonnet/Opus), YAGNI rules, `/cost-review` | — (see "Don't install" below) |
 | Subagent delegation | `prompts/subagent.md` — when to spawn + which model tier | — (model-agnostic guidance, no runtime) |
 | Cross-session memory | `MEMORY.md` + `prompts/memorize.md` | append entries; archive quarterly |
 | Self-learning (heuristics) | `LESSONS.md` + `prompts/learn.md` | append only non-obvious lessons with a usable "next time" rule |
 | Architecture decisions | `docs/adr/` + `prompts/adr.md` + template | one ADR per hard-to-reverse choice |
-| Methodology | `prompts/sparc.md` (5-phase) + Superpowers (plugin) | swap workflow skills, don't stack |
+| Methodology | portable prompts (`sparc`, `grill-me`, `tdd`, `diagnose`, `zoom-out`, `to-issues`) | optionally add one project-scoped workflow skill |
 | Risk classification | `prompts/risk-review.md` (per-diff dimension scoring) | run before `/preflight` on auth/data/infra changes |
 | Periodic checks | `prompts/audit.md` (manual / on cadence) | wire to scheduled CI if needed |
-| MCP base | github, filesystem, git, playwright, sequential-thinking, db | stack-specific table below |
-| Plugins base | superpowers, ponytail, context7, anthropics (claude-api + document-skills), trailofbits marketplace registered (opt-in) | stack-specific table below |
+| MCP base | github, filesystem, git via `uvx mcp-server-git`, playwright, sequential-thinking, db | `tools/apply-profile.sh` for stack-specific MCPs |
+| Plugins base | none | keep plugin installs explicit and project-scoped; do not install user-level resources from `apply.sh` |
 
 ## How this differs from `find-skills`
 - **`find-skills` = discovery.** Live, ranked-by-installs search of the skills.sh
@@ -45,7 +45,7 @@ against the r/ClaudeAI "best skills" thread + the harness's own layers.)
 | a custom debug/root-cause skill (e.g. myclaude `dendrite`, `five-vitals`) | `diagnose`, `zoom-out` |
 | a commit gate / secret scanner / formatter skill | the git hooks (`.githooks/`) + `security-scan` |
 | an issue-creation / spec skill (Matt Pocock "QA Session") | `to-issues`, `grill-me` |
-| output-only compression gimmicks | Ponytail + model-tier routing + `/compact`; don't add style-only compression layers |
+| output-only compression gimmicks | model-tier routing + `/compact` + terse base rules; don't add style-only compression layers |
 | context-engineering kits | redundant unless the *project itself* builds LLM agents |
 | self-mutating / auto-tuning meta-skills (e.g. one-skill-to-rule-them-all) | overlaps harness hooks/memory; thread warns auto-mutation regresses quietly |
 | a second workflow skill alongside Superpowers | swap, don't stack (see "Project workflow") |
@@ -60,7 +60,6 @@ The `find-skills` skill checks the [skills.sh](https://skills.sh) leaderboard an
 **Direct install (CLI):**
 ```bash
 npx skills add <owner/repo@skill> -y       # project-local
-npx skills add <owner/repo@skill> -g -y    # global
 ```
 
 Quality bar before installing: prefer 1K+ installs, prefer official sources
@@ -121,22 +120,32 @@ For projects that themselves build LLM agents.
 Skills teach *how*; MCP servers connect to *external systems* (deploys, DBs,
 error monitors, payments). Add the server for a stack your project actually uses.
 
-**Already in the base — don't re-add:** `github`, `filesystem`, `git`,
+**Already in the base — don't re-add:** `github`, `filesystem`, `git` via `uvx mcp-server-git`,
 `playwright`, `db` (Postgres via `@bytebase/dbhub`).
+
+Apply the curated project-local MCP profiles:
+
+```bash
+tools/apply-profile.sh vercel
+tools/apply-profile.sh supabase
+tools/apply-profile.sh stripe
+tools/apply-profile.sh figma
+tools/audit-capabilities.sh --expect-profile all
+```
 
 | Stack | Server (verified) | Install / endpoint | Official? |
 |-------|-------------------|--------------------|-----------|
-| Vercel | Vercel MCP | `https://mcp.vercel.com` (OAuth) — or `npx mcp-remote https://mcp.vercel.com` | ✅ |
+| Vercel | Vercel MCP | `tools/apply-profile.sh vercel` → `https://mcp.vercel.com` (OAuth) | ✅ |
 | Docker | Docker Hub MCP + MCP Toolkit | `docker mcp` CLI / [hub.docker.com/mcp](https://hub.docker.com/mcp) | ✅ |
-| Stripe | Stripe MCP | `npx -y @stripe/mcp@latest --api-key=sk_...` or `https://mcp.stripe.com` | ✅ |
-| Supabase | Supabase MCP | `@supabase/mcp-server-supabase` or `https://mcp.supabase.com/mcp` | ✅ |
+| Stripe | Stripe MCP | `tools/apply-profile.sh stripe` → `npx -y @stripe/mcp@latest` with `STRIPE_SECRET_KEY` forwarded | ✅ |
+| Supabase | Supabase MCP | `tools/apply-profile.sh supabase` → `https://mcp.supabase.com/mcp?read_only=true` | ✅ |
 | Sentry | Sentry MCP | `https://mcp.sentry.dev` (OAuth) | ✅ |
 | Cloudflare | cloudflare/mcp-server-cloudflare | `*.mcp.cloudflare.com/mcp` (per product) | ✅ |
 | AWS | awslabs/mcp (suite) | per-server via `uvx`, see [awslabs.github.io/mcp](https://awslabs.github.io/mcp/) | ✅ |
 | Notion | makenotion/notion-mcp-server | `https://mcp.notion.com/sse` (OAuth) | ✅ |
 | Linear | Linear MCP | `https://mcp.linear.app/mcp` (OAuth) | ✅ |
 | Jira/Confluence | Atlassian Rovo MCP | `https://mcp.atlassian.com/v1/mcp` (OAuth) | ✅ |
-| Figma | Figma Dev Mode MCP | local desktop `http://127.0.0.1:3845/mcp` | ✅ |
+| Figma | Figma MCP | `tools/apply-profile.sh figma` → `https://mcp.figma.com/mcp` | ✅ |
 
 > Postgres note: the old Anthropic `server-postgres` is **archived/deprecated**
 > (had a SQL-injection case) — stick with the base's `@bytebase/dbhub`.
@@ -150,6 +159,10 @@ error monitors, payments). Add the server for a stack your project actually uses
 A plugin bundles skills + commands + hooks + MCP for a whole stack — often the
 leanest way to equip a project (one install vs many loose skills).
 
+Do not install plugins globally as part of the base harness. If a project needs a
+plugin, install it intentionally for that project and keep Claude/Codex parity in
+mind.
+
 **Discovery:** run `/plugin` (Discover tab shows a **Context cost** estimate and
 exactly what each will install) · web catalog [claude.com/plugins](https://claude.com/plugins).
 The official marketplace `claude-plugins-official` is **auto-available**; the
@@ -160,24 +173,22 @@ community one needs `/plugin marketplace add anthropics/claude-plugins-community
 | Vercel / Next.js | `vercel/vercel-plugin` | `npx plugins add vercel/vercel-plugin` | Official Vercel — 25 skills + 3 agents + 5 commands; auto-injects in Vercel/Next.js projects. **This is "the Vercel plugin."** |
 | Pre-configured MCP (one-command) | `<name>@claude-plugins-official` | `/plugin install vercel@claude-plugins-official` | github, gitlab, vercel, firebase, supabase, sentry, linear, notion, figma, slack, asana, atlassian |
 | Language intelligence (LSP) | `<lang>-lsp@claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` | ts, pyright, gopls, rust-analyzer, clangd, … — auto-diagnostics after edits |
-| Version-correct library docs | `upstash/context7` | installed by `apply.sh`; manual: `claude plugin marketplace add upstash/context7 && claude plugin install context7@context7-marketplace` or `codex plugin marketplace add upstash/context7 && codex plugin add context7@context7-marketplace` | Injects version-specific docs (React/Next/Prisma/…); community |
+| Version-correct library docs | `upstash/context7` | project opt-in; install only when the project needs it | Injects version-specific docs (React/Next/Prisma/…); community |
 
-**Already installed by `apply.sh` — don't re-add:** `obra/superpowers`,
-`DietrichGebert/ponytail`, `upstash/context7`,
-`anthropics/skills@claude-api`, `anthropics/skills@document-skills`. The
-`trailofbits/skills` marketplace is also pre-registered — pick specific
-plugins from it on demand (`claude plugin install <name>@trailofbits`).
+**Base `apply.sh` plugin installs:** none. The base harness uses project-local
+rules, prompts, hooks, skills, and MCP config.
 
 ## Project workflow — run exactly ONE
 
 A "workflow" skill structures how the agent plans and implements. The base ships
-**Superpowers** (`obra/superpowers`, installed by apply.sh) — the most-endorsed
-option in the community. Do **not** run two workflow skills at once; they fight
-over the same job. Swap, don't stack:
+portable prompts (`grill-me`, `sparc`, `tdd`, `diagnose`, `zoom-out`, `to-issues`).
+If you add **Superpowers** for a project, keep it project-scoped and mirrored for
+both tools. Do **not** run two workflow skills at once; they fight over the same
+job. Swap, don't stack:
 
 | Skill | Source | Fits |
 |-------|--------|------|
-| Superpowers *(default, in base)* | `obra/superpowers` | Small–medium, well-defined work; strong brainstorming → plan → execute |
+| Superpowers | `obra/superpowers` | Small–medium, well-defined work; strong brainstorming → plan → execute |
 | OpenSpec | `Fission-AI/OpenSpec` | Lightweight spec-driven build + rollback |
 | GSD (Get-Shit-Done) | `gsd-build/get-shit-done` | Large, iterative projects; phased with heavy safety gates; `/gsd:map-codebase` onboarding |
 

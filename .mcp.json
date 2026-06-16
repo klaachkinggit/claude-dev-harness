@@ -19,10 +19,10 @@
       ]
     },
     "git": {
-      "command": "npx",
+      "command": "uvx",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-git",
+        "mcp-server-git",
+        "--repository",
         "."
       ]
     },
@@ -39,6 +39,29 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ]
+    },
+    "vercel": {
+      "type": "http",
+      "url": "https://mcp.vercel.com"
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?read_only=true"
+    },
+    "stripe": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@stripe/mcp@latest"
+      ],
+      "env": {
+        "STRIPE_SECRET_KEY": "$STRIPE_SECRET_KEY"
+      }
+    },
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
     }
   }
 }

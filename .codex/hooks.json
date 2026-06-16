@@ -1,5 +1,4 @@
 {
-  "_comment": "Codex CLI hooks. Scripts are vendored under .codex/hooks and read tool input JSON on stdin. They exit 2 to block dangerous actions.",
   "hooks": {
     "Stop": [
       {
