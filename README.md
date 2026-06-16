@@ -31,13 +31,13 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 - Activated by `apply.sh`: `git config core.hooksPath .githooks`
 
 ### MCP servers (per-tool config via `tools/gen-mcp.py`)
-Base set: `github`, `filesystem`, `git`, `playwright`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
+Base set: `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
 
 ### Code graph + token economy (CodeGraph)
 Local symbol/call/import graph that both Claude Code & Codex query over MCP instead of grep/read sweeps — ~−47% tokens, −58% tool calls, 100% local. Install once: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then `codegraph install` (auto-wires both tools), then `codegraph init` per repo (`apply.sh` runs the last two if `codegraph` is on PATH). Token rules live in `RULES.md` → **Token economy**.
 
 ### Plugins (Claude Code — installed by `apply.sh`)
-`obra/superpowers` (workflow), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat).
+`obra/superpowers` (workflow), `DietrichGebert/ponytail` (minimalist/token-discipline guardrails), `upstash/context7` (current library docs), `anthropics/skills` → `claude-api` + `document-skills` (Anthropic SDK + PDF/docx/xlsx/pptx). The `trailofbits/skills` marketplace is also registered so you can `claude plugin install <name>@trailofbits` on demand (it ships ~19 security plugins — opt-in to avoid bloat). Codex gets `ponytail` and `context7` through its plugin marketplace.
 
 ### Hooks (Claude Code & Codex provider mirrors)
 | Script | Trigger | Does |
