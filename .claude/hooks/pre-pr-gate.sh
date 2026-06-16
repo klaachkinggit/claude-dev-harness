@@ -17,12 +17,13 @@ if [ -f package.json ]; then
   SCRIPT=$(python3 -c "
 import json, sys
 s = json.load(open('package.json')).get('scripts', {})
-t = s.get('test', '')
-# Skip placeholder scripts
-if t and 'no test specified' not in t and t != 'exit 1':
-    print(t)
+for name in ('test', 'test:unit', 'test:all'):
+    t = s.get(name, '')
+    if t and 'no test specified' not in t and t != 'exit 1':
+        print(name)
+        break
 " 2>/dev/null || echo "")
-  [ -n "$SCRIPT" ] && run_tests npm test --silent
+  [ -n "$SCRIPT" ] && run_tests npm run "$SCRIPT"
 elif [ -f pyproject.toml ] || [ -f pytest.ini ] || [ -f setup.cfg ]; then
   command -v pytest >/dev/null 2>&1 && run_tests pytest -q --tb=short
 fi
