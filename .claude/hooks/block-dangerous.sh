@@ -12,6 +12,18 @@ except Exception:
 
 [ -z "$CMD" ] && exit 0
 
+if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+push([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[[:space:]])(-f|--force|--force-with-lease)([=[:space:]]|$)|[[:space:]]\+[^[:space:]]+|[[:space:]]([^[:space:]]+:)?(main|master)(:[^[:space:]]*)?([[:space:]]|$)'; then
+    echo "BLOCKED: unsafe git push" >&2
+    exit 2
+  fi
+  CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || true)
+  if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
+    echo "BLOCKED: git push from deployment branch" >&2
+    exit 2
+  fi
+fi
+
 # Parallel arrays — index i pairs DESCS[i] with REGEXES[i].
 # Catastrophic rm = RECURSIVE (-r/-R) on a critical target. Non-recursive rm of a
 # specific file (even by absolute path) is NOT blocked — that's a normal operation.
@@ -31,7 +43,10 @@ DESCS=(
   "redirect to disk device"
   "mkfs"
   "pipe remote content to shell"
-  "force push to main/master"
+  "git reset --hard"
+  "git branch -D"
+  "git checkout ."
+  "git restore ."
   "delete/move of .env secret file"
   "truncating redirect onto .env secret file"
   "git clean -f (removes untracked files incl .env)"
@@ -48,7 +63,10 @@ REGEXES=(
   '>[[:space:]]*/dev/s[dh][a-z]'
   'mkfs\.'
   '(curl|wget)[[:space:]].*[|][[:space:]]*(ba)?sh([[:space:]]|$)'
-  'git[[:space:]]+push[[:space:]].*--force[^-]*(main|master)'
+  '(^|[;&|][[:space:]]*)git[[:space:]]+reset[[:space:]].*--hard([[:space:]]|$)'
+  '(^|[;&|][[:space:]]*)git[[:space:]]+branch[[:space:]].*-[a-zA-Z]*D([[:space:]]|$)'
+  '(^|[;&|][[:space:]]*)git[[:space:]]+checkout[[:space:]]+\./?([[:space:]]|$)'
+  '(^|[;&|][[:space:]]*)git[[:space:]]+restore[[:space:]]+\./?([[:space:]]|$)'
   '(rm|mv|shred|truncate)[[:space:]]+([^|;&]*[[:space:]])?\.env(\.local|\*)?([[:space:]]|"|'"'"'|$)'
   '[^>]>[[:space:]]*\.env(\.local)?([[:space:]]|"|'"'"'|$)'
   'git[[:space:]]+clean[[:space:]].*-[a-zA-Z]*f'
