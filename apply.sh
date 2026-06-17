@@ -43,7 +43,7 @@ fetch_safe() {  # fetch src → dst, backing up an existing dst first
 fetch_hooks() {
   local dir="$1"
   mkdir -p "${dir}/hooks"
-  for h in protect-secrets block-dangerous auto-format log-bash pre-pr-gate; do
+  for h in project-scope protect-secrets block-dangerous auto-format log-bash pre-pr-gate; do
     fetch "${dir}/hooks/${h}.sh" > "${dir}/hooks/${h}.sh"; chmod +x "${dir}/hooks/${h}.sh"
   done
 }
@@ -170,8 +170,8 @@ echo "Unknown/!listed tool? Read HARNESS.md — it maps every layer to your tool
 echo ""
 echo "VERIFY:"
 echo "   git config --get core.hooksPath     → should print .githooks"
-echo "   ls .claude/hooks/ 2>/dev/null        → 5 scripts if Claude enabled"
-echo "   ls .codex/hooks/ 2>/dev/null         → 5 scripts if Codex enabled"
+echo "   ls .claude/hooks/ 2>/dev/null        → 6 scripts if Claude enabled"
+echo "   ls .codex/hooks/ 2>/dev/null         → 6 scripts if Codex enabled"
 echo "   tools/audit-capabilities.sh          → verify mirrors and local-only resources"
 if { [ "$TOOL" = "claude" ] || [ "$TOOL" = "all" ]; } && command -v claude >/dev/null 2>&1; then
   echo "   claude mcp list                      → confirm servers (reads .mcp.json)"

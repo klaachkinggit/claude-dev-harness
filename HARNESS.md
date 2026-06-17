@@ -49,6 +49,7 @@ Provider-local scripts read the tool-call as JSON on stdin and exit `2` to block
 
 | Script | Blocks / does |
 |--------|--------------|
+| `project-scope.sh` | direct Read/Write/Edit paths outside the project root, plus common Bash path references outside the project root (`/Users`, `~`, `/etc`, `/tmp`, `../outside`); URLs stay allowed |
 | `block-dangerous.sh` | recursive rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb, mkfs, dd-to-disk; **+ rm/mv/truncate of `.env`/`.env.local` and `git clean -f`** (append `>>`, `cp` restore, and `.env.example` stay allowed) |
 | `protect-secrets.sh` | read/write/edit of `.env`/`.pem`/`.key`/credentials via the file tools; **allows `*.example` templates** |
 | `auto-format.sh` | prettier/black/ruff/gofmt/rustfmt on edited files |

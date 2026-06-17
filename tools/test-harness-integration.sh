@@ -52,8 +52,21 @@ test -f .codex/config.toml
 test -x tools/apply-profile.sh
 test -x tools/remove-profile.sh
 test -x tools/audit-capabilities.sh
+test -x .claude/hooks/project-scope.sh
+test -x .codex/hooks/project-scope.sh
 grep -q '"custom-claude"' .mcp.json
 grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
+
+printf '{"tool_input":{"file_path":"%s/AGENTS.md"}}' "$PWD" | .claude/hooks/project-scope.sh
+printf '{"tool_input":{"command":"curl https://example.com"}}' | .codex/hooks/project-scope.sh
+set +e
+printf '{"tool_input":{"file_path":"%s/.ssh/config"}}' "$HOME" | .claude/hooks/project-scope.sh >/dev/null 2>&1
+claude_scope_status=$?
+printf '{"tool_input":{"command":"ls %s"}}' "$HOME" | .codex/hooks/project-scope.sh >/dev/null 2>&1
+codex_scope_status=$?
+set -e
+test "$claude_scope_status" -eq 2
+test "$codex_scope_status" -eq 2
 
 HOME="$TMP/home" tools/apply-profile.sh all >/dev/null
 before="$(cksum .mcp.json .codex/config.toml)"

@@ -22,6 +22,7 @@
 
 ## Workflow
 
+- Stay inside the project root for file and shell access. Internet access is allowed, but do not read, list, write, or operate on machine files outside the current repo/project unless the user explicitly names that external path.
 - Before any non-trivial feature, assess whether a skill, MCP server, or plugin would help (`prompts/assess-capabilities.md` / `find-skills`); vet before adding anything, and do not vendor tools that the base environment already provides.
 - Front-end / UI work → use the compact design skills in the provider-local mirror (`.codex/skills/` for Codex, `.claude/skills/` for Claude): `frontend-design` (bold, anti-generic UI), `ui-ux-pro-max` (UX/a11y/layout checklist), `impeccable` (anti-slop self-audit), `web-design-guidelines` (a11y / Web Interface Guidelines review), `awesome-design-md` (drop-in design systems). Commit to one aesthetic direction; audit before shipping.
 - Use `prompts/grill-me.md` before any large implementation — uncover all decision branches first.

@@ -92,10 +92,16 @@ fi
 
 claude_hooks="$(find .claude/hooks -maxdepth 1 -type f -name '*.sh' -exec basename {} \; | sort)"
 codex_hooks="$(find .codex/hooks -maxdepth 1 -type f -name '*.sh' -exec basename {} \; | sort)"
+expected_hooks="$(printf '%s\n' auto-format.sh block-dangerous.sh log-bash.sh pre-pr-gate.sh project-scope.sh protect-secrets.sh | sort)"
 if [ "$claude_hooks" = "$codex_hooks" ]; then
   pass "Claude/Codex hook sets match"
 else
   fail "Claude/Codex hook sets differ"
+fi
+if [ "$claude_hooks" = "$expected_hooks" ]; then
+  pass "expected provider hook set installed"
+else
+  fail "provider hook set does not match expected hooks"
 fi
 
 for script in tools/apply-profile.sh tools/remove-profile.sh tools/audit-capabilities.sh; do

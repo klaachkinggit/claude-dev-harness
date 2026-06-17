@@ -53,6 +53,7 @@ Use `tools/audit-capabilities.sh` to verify provider mirrors, MCP config, and th
 ### Hooks (Claude Code & Codex provider mirrors)
 | Script | Trigger | Does |
 |--------|---------|------|
+| `project-scope.sh` | Read/Write/Edit/Bash | block direct file/path access outside the project root |
 | `protect-secrets.sh` | Read/Write/Edit | block `.env`/`.pem`/`.key`/credentials (allows `*.example`) |
 | `block-dangerous.sh` | Bash | recursive-rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb — **+ rm/mv/truncate of `.env` & `git clean -f`** |
 | `log-bash.sh` | Bash | log commands to provider-local log (`.claude/bash.log` or `.codex/bash.log`) |
