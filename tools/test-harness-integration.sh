@@ -25,6 +25,22 @@ PY
 mkdir -p "$TMP/home" "$TMP/project"
 cd "$TMP/project"
 git init -q
+mkdir -p .codex
+cat > .mcp.json <<'JSON'
+{
+  "mcpServers": {
+    "custom-claude": {
+      "command": "custom-command",
+      "args": ["--custom"]
+    }
+  }
+}
+JSON
+cat > .codex/config.toml <<'TOML'
+[mcp_servers.custom-codex]
+command = "custom-command"
+args = ["--custom"]
+TOML
 
 HOME="$TMP/home" TOOL=all HARNESS_RAW_BASE="$RAW_BASE" SKIP_CODEGRAPH=1 bash "$ROOT/apply.sh" >/dev/null
 
@@ -34,9 +50,26 @@ test -f CLAUDE.md
 test -f .mcp.json
 test -f .codex/config.toml
 test -x tools/apply-profile.sh
+test -x tools/remove-profile.sh
 test -x tools/audit-capabilities.sh
+grep -q '"custom-claude"' .mcp.json
+grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
 
 HOME="$TMP/home" tools/apply-profile.sh all >/dev/null
+before="$(cksum .mcp.json .codex/config.toml)"
+HOME="$TMP/home" tools/apply-profile.sh supabase --dry-run >/dev/null
+after="$(cksum .mcp.json .codex/config.toml)"
+test "$before" = "$after"
+HOME="$TMP/home" tools/remove-profile.sh stripe >/dev/null
+! grep -q '"stripe"' .mcp.json
+! grep -q '^\[mcp_servers.stripe\]' .codex/config.toml
+grep -q '"custom-claude"' .mcp.json
+grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
+remove_before="$(cksum .mcp.json .codex/config.toml)"
+HOME="$TMP/home" tools/remove-profile.sh figma --dry-run >/dev/null
+remove_after="$(cksum .mcp.json .codex/config.toml)"
+test "$remove_before" = "$remove_after"
+HOME="$TMP/home" tools/apply-profile.sh stripe >/dev/null
 HOME="$TMP/home" tools/audit-capabilities.sh --expect-profile all >/dev/null
 
 python3 -m json.tool .mcp.json >/dev/null

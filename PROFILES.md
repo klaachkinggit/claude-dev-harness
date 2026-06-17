@@ -130,8 +130,20 @@ tools/apply-profile.sh vercel
 tools/apply-profile.sh supabase
 tools/apply-profile.sh stripe
 tools/apply-profile.sh figma
+tools/apply-profile.sh all --dry-run
 tools/audit-capabilities.sh --expect-profile all
 ```
+
+Remove a profile cleanly:
+
+```bash
+tools/remove-profile.sh stripe
+tools/remove-profile.sh all --dry-run
+```
+
+Both profile tools support `--tool claude|codex|all`. They are safe for existing
+projects: generated base/profile entries are replaced or removed, while custom
+MCP servers already present in `.mcp.json` or `.codex/config.toml` are preserved.
 
 Profile auth notes:
 

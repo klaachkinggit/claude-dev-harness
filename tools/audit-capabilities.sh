@@ -98,7 +98,7 @@ else
   fail "Claude/Codex hook sets differ"
 fi
 
-for script in tools/apply-profile.sh tools/audit-capabilities.sh; do
+for script in tools/apply-profile.sh tools/remove-profile.sh tools/audit-capabilities.sh; do
   if bash -n "$script"; then
     pass "$script syntax"
   else

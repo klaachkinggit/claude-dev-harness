@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  tools/apply-profile.sh <profile> [--tool claude|codex|all]
+  tools/apply-profile.sh <profile> [--tool claude|codex|all] [--dry-run]
 
 Profiles:
   vercel    Adds Vercel hosted MCP: https://mcp.vercel.com
@@ -20,11 +20,14 @@ Supabase environment knobs:
 Writes only project-local config:
   Claude: .mcp.json
   Codex:  .codex/config.toml
+
+Use --dry-run to print the config that would be written without changing files.
 EOF
 }
 
 PROFILE=""
 TOOL="all"
+DRY_RUN=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -38,6 +41,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --tool=*)
       TOOL="${1#*=}"
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=1
       shift
       ;;
     -*)
@@ -70,7 +77,7 @@ case "$TOOL" in
     ;;
 esac
 
-PROFILE="$PROFILE" TOOL="$TOOL" python3 - <<'PY'
+PROFILE="$PROFILE" TOOL="$TOOL" DRY_RUN="$DRY_RUN" python3 - <<'PY'
 import json
 import os
 import re
@@ -120,6 +127,7 @@ def server_defs():
 
 PROFILE = os.environ["PROFILE"].lower()
 TOOL = os.environ["TOOL"].lower()
+DRY_RUN = os.environ["DRY_RUN"] == "1"
 ALL = server_defs()
 
 if PROFILE == "all":
@@ -143,6 +151,10 @@ def write_claude(selected):
     cfg.setdefault("mcpServers", {})
     for name in selected:
         cfg["mcpServers"][name] = ALL[name]["claude"]
+    if DRY_RUN:
+        print("DRY RUN .mcp.json (%s)" % ", ".join(selected))
+        print(json.dumps(cfg, indent=2))
+        return
     path.write_text(json.dumps(cfg, indent=2) + "\n")
     print("  wrote .mcp.json (%s)" % ", ".join(selected))
 
@@ -181,11 +193,15 @@ def codex_block(name, entry):
 
 def write_codex(selected):
     path = Path(".codex/config.toml")
-    path.parent.mkdir(exist_ok=True)
     existing = path.read_text() if path.exists() else ""
     base = without_codex_servers(existing, set(selected))
     blocks = [codex_block(name, ALL[name]["codex"]) for name in selected]
     body = ("\n\n".join(part for part in [base, "\n\n".join(blocks)] if part.strip())).rstrip()
+    if DRY_RUN:
+        print("DRY RUN .codex/config.toml (%s)" % ", ".join(selected))
+        print(body)
+        return
+    path.parent.mkdir(exist_ok=True)
     path.write_text(body + "\n")
     print("  wrote .codex/config.toml (%s)" % ", ".join(selected))
 

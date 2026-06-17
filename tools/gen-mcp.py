@@ -47,6 +47,19 @@ def _json_servers(var_syntax):
 
 def emit_claude():
     cfg = _json_servers(lambda v: "${%s}" % v)               # Claude: ${VAR}
+    path = ".mcp.json"
+    if os.path.exists(path):
+        with open(path) as f:
+            existing = json.load(f)
+        existing.setdefault("mcpServers", {})
+        managed = {s["name"] for s in SERVERS}
+        existing["mcpServers"] = {
+            name: server
+            for name, server in existing["mcpServers"].items()
+            if name not in managed
+        }
+        existing["mcpServers"].update(cfg["mcpServers"])
+        cfg = existing
     _write(".mcp.json", json.dumps(cfg, indent=2))
 
 

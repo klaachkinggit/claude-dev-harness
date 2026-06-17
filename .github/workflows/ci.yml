@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Harness integration
+        run: tools/test-harness-integration.sh
+
       - name: Detect stack
         id: detect
         run: |

@@ -27,3 +27,8 @@ Append-only log of heuristics learned. Read at session start alongside `MEMORY.m
 - **Saw:** The temp-project integration test caught that `audit-capabilities.sh` required `apply.sh`, which applied projects do not contain.
 - **Why:** A harness repo can have maintenance files that target projects should not carry.
 - **Next time:** Integration tests for harness tooling should run from a fresh applied project and distinguish maintenance-only files from installed files.
+
+## 2026-06-17 — preserve existing MCP config on adoption  [tools]
+- **Saw:** Codex MCP generation preserved custom servers, but Claude `.mcp.json` generation overwrote them.
+- **Why:** Applying a harness mid-project is an adoption path, not a greenfield-only installer.
+- **Next time:** Generated provider config should replace only harness-managed entries and preserve project-owned entries.
