@@ -7,13 +7,17 @@
 # Non-interactive (for agents):
 #   TOOL=claude|codex|all  bash <(curl -fsSL .../apply.sh)
 #
+# Harness maintenance:
+#   HARNESS_RAW_BASE=file:///path/to/klaach_harness SKIP_CODEGRAPH=1 TOOL=all bash apply.sh
+#
 # If your tool isn't listed: use TOOL=all, then read HARNESS.md — it maps every
 # layer to the mechanism your tool uses, so you can wire it up yourself.
 
 set -euo pipefail
 
 REPO="klaachkinggit/klaach_harness"
-RAW="https://raw.githubusercontent.com/${REPO}/main"
+RAW="${HARNESS_RAW_BASE:-https://raw.githubusercontent.com/${REPO}/main}"
+RAW="${RAW%/}"
 
 echo "=== Dev Harness — Apply ==="
 echo "Target: $(pwd)"
@@ -140,7 +144,9 @@ esac
 
 # ── [6/6] CodeGraph (code graph + token saver) ───────────────
 echo "[6/6] CodeGraph (code graph + token saver)..."
-if command -v codegraph >/dev/null 2>&1; then
+if [ "${SKIP_CODEGRAPH:-0}" = "1" ]; then
+  echo "  skipped CodeGraph (SKIP_CODEGRAPH=1)."
+elif command -v codegraph >/dev/null 2>&1; then
   codegraph install || true
   codegraph init || true
   echo "  CodeGraph installed and index built (.codegraph/)."

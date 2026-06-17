@@ -98,13 +98,27 @@ else
   fail "Claude/Codex hook sets differ"
 fi
 
-for script in tools/apply-profile.sh tools/audit-capabilities.sh apply.sh; do
+for script in tools/apply-profile.sh tools/audit-capabilities.sh; do
   if bash -n "$script"; then
     pass "$script syntax"
   else
     fail "$script syntax"
   fi
 done
+if [ -f apply.sh ]; then
+  if bash -n apply.sh; then
+    pass "apply.sh syntax"
+  else
+    fail "apply.sh syntax"
+  fi
+fi
+if [ -f tools/test-harness-integration.sh ]; then
+  if bash -n tools/test-harness-integration.sh; then
+    pass "tools/test-harness-integration.sh syntax"
+  else
+    fail "tools/test-harness-integration.sh syntax"
+  fi
+fi
 
 if python3 -m py_compile tools/gen-mcp.py >/dev/null 2>&1; then
   pass "tools/gen-mcp.py compiles"

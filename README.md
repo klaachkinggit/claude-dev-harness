@@ -84,5 +84,7 @@ Append below the `<!-- Add project-specific rules -->` line in your rules file:
 ## Maintaining (harness repo only)
 Edit `RULES.md`, then `./sync-rules.sh` regenerates all tool files (`CLAUDE.md` = `RULES.md` + `.claude-extra.md`). Run it **only here** — in a target project you own the rules files. `apply.sh` backs up overwrites to `<file>.bak`.
 
+Run `tools/test-harness-integration.sh` before changing `apply.sh` or profile tooling. It applies the harness into a temporary git repo from a local `file://` source, applies all optional MCP profiles, and runs the capability audit there.
+
 ## Env
 Copy `.env.example` → `.env`: `GITHUB_TOKEN` (required for github MCP), `DATABASE_URL` (optional, enables db MCP).

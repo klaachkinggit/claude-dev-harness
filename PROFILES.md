@@ -133,6 +133,15 @@ tools/apply-profile.sh figma
 tools/audit-capabilities.sh --expect-profile all
 ```
 
+Profile auth notes:
+
+| Profile | Auth / scoping |
+|---------|----------------|
+| Vercel | Remote MCP at `https://mcp.vercel.com`; the client handles OAuth in-browser when the server is added or first used. |
+| Supabase | Remote MCP at `https://mcp.supabase.com/mcp`; the harness defaults to `read_only=true`. Set `SUPABASE_PROJECT_REF=<id>` before applying to scope tools to one project, and `SUPABASE_MCP_FEATURES=database,docs` to limit tool groups. |
+| Stripe | Local MCP via `npx -y @stripe/mcp@latest`; set `STRIPE_SECRET_KEY` in the shell or project env before use. Keep human confirmation enabled for write-capable tools. |
+| Figma | Remote MCP at `https://mcp.figma.com/mcp`; use a Figma account with access to the file and paste a file/node link into the agent prompt. Full or Dev seats have the broadest MCP access. |
+
 | Stack | Server (verified) | Install / endpoint | Official? |
 |-------|-------------------|--------------------|-----------|
 | Vercel | Vercel MCP | `tools/apply-profile.sh vercel` → `https://mcp.vercel.com` (OAuth) | ✅ |
