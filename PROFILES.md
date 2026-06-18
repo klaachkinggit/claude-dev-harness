@@ -24,7 +24,7 @@ discovery skill or the direct install commands below.
 | Methodology | portable prompts (`sparc`, `grill-me`, `tdd`, `diagnose`, `zoom-out`, `to-issues`) | optionally add one project-scoped workflow skill |
 | Risk classification | `prompts/risk-review.md` (per-diff dimension scoring) | run before `/preflight` on auth/data/infra changes |
 | Periodic checks | `prompts/audit.md` (manual / on cadence) | wire to scheduled CI if needed |
-| MCP base | github, filesystem, git via `uvx mcp-server-git`, playwright, sequential-thinking, db | `tools/apply-profile.sh` for stack-specific MCPs |
+| MCP base | github, filesystem, git via `uvx mcp-server-git`, playwright, sequential-thinking, context7, db when `DATABASE_URL` is set | `tools/apply-profile.sh` for stack-specific MCPs |
 | Plugins base | none | keep plugin installs explicit and project-scoped; do not install user-level resources from `apply.sh` |
 
 ## How this differs from `find-skills`
@@ -121,7 +121,7 @@ Skills teach *how*; MCP servers connect to *external systems* (deploys, DBs,
 error monitors, payments). Add the server for a stack your project actually uses.
 
 **Already in the base — don't re-add:** `github`, `filesystem`, `git` via `uvx mcp-server-git`,
-`playwright`, `db` (Postgres via `@bytebase/dbhub`).
+`playwright`, `sequential-thinking`, `context7`; `db` only when `DATABASE_URL` is set (Postgres via `@bytebase/dbhub`).
 
 Apply the curated project-local MCP profiles:
 
@@ -194,7 +194,7 @@ community one needs `/plugin marketplace add anthropics/claude-plugins-community
 | Vercel / Next.js | `vercel/vercel-plugin` | `npx plugins add vercel/vercel-plugin` | Official Vercel — 25 skills + 3 agents + 5 commands; auto-injects in Vercel/Next.js projects. **This is "the Vercel plugin."** |
 | Pre-configured MCP (one-command) | `<name>@claude-plugins-official` | `/plugin install vercel@claude-plugins-official` | github, gitlab, vercel, firebase, supabase, sentry, linear, notion, figma, slack, asana, atlassian |
 | Language intelligence (LSP) | `<lang>-lsp@claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` | ts, pyright, gopls, rust-analyzer, clangd, … — auto-diagnostics after edits |
-| Version-correct library docs | `upstash/context7` | project opt-in; install only when the project needs it | Injects version-specific docs (React/Next/Prisma/…); community |
+| Version-correct library docs | Context7 MCP | already in base as `context7` | Injects version-specific docs (React/Next/Prisma/…); community |
 
 **Base `apply.sh` plugin installs:** none. The base harness uses project-local
 rules, prompts, hooks, skills, and MCP config.

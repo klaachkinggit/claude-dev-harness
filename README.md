@@ -31,10 +31,10 @@ TOOL=claude bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/kl
 - Activated by `apply.sh`: `git config core.hooksPath .githooks`
 
 ### MCP servers (per-tool config via `tools/gen-mcp.py`)
-Base set: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `db` (Postgres, set `DATABASE_URL`). Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
+Base set: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `context7`; `db` is added when `DATABASE_URL` is set. Emits the right format/path per tool (`.mcp.json` for Claude / `.codex/config.toml` for Codex). Stack-specific servers → [PROFILES.md](PROFILES.md).
 
 ### Code graph + token economy (CodeGraph)
-Local symbol/call/import graph that both Claude Code & Codex query over MCP instead of grep/read sweeps — ~−47% tokens, −58% tool calls, 100% local. Install once: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then `codegraph install` (auto-wires both tools), then `codegraph init` per repo (`apply.sh` runs the last two if `codegraph` is on PATH). Token rules live in `RULES.md` → **Token economy**.
+Local symbol/call/import graph that both Claude Code & Codex can query over MCP instead of grep/read sweeps — ~−47% tokens, −58% tool calls, 100% local. Install once: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then `codegraph init` per repo (`apply.sh` runs this if `codegraph` is on PATH). Machine-level MCP wiring via `codegraph install` is opt-in with `INSTALL_CODEGRAPH_MCP=1`. Token rules live in `RULES.md` → **Token economy**.
 
 ### Profiles (project-local optional MCPs)
 `apply.sh` does not install user-level plugins or skills. Optional stack MCPs are added per project:
@@ -48,7 +48,7 @@ tools/apply-profile.sh all --dry-run
 tools/remove-profile.sh stripe
 ```
 
-Use `tools/audit-capabilities.sh` to verify provider mirrors, MCP config, and the no user-level resources rule.
+Use `tools/audit-capabilities.sh` to verify provider mirrors and MCP config. Add `--check-user-resources` only when you explicitly want it to inspect `~/.codex`, `~/.claude`, and `~/.agents`.
 
 ### Hooks (Claude Code & Codex provider mirrors)
 | Script | Trigger | Does |

@@ -25,7 +25,7 @@ PY
 mkdir -p "$TMP/home" "$TMP/project"
 cd "$TMP/project"
 git init -q
-mkdir -p .codex
+mkdir -p .claude .codex
 cat > .mcp.json <<'JSON'
 {
   "mcpServers": {
@@ -41,14 +41,61 @@ cat > .codex/config.toml <<'TOML'
 command = "custom-command"
 args = ["--custom"]
 TOML
+cat > .claude/settings.json <<'JSON'
+{
+  "permissions": {
+    "allow": ["Bash(custom:*)"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "CustomTool",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo custom-claude"
+          }
+        ]
+      }
+    ]
+  },
+  "customSetting": true
+}
+JSON
+cat > .codex/hooks.json <<'JSON'
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^CustomTool$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo custom-codex"
+          }
+        ]
+      }
+    ]
+  },
+  "customSetting": true
+}
+JSON
 
 HOME="$TMP/home" TOOL=all HARNESS_RAW_BASE="$RAW_BASE" SKIP_CODEGRAPH=1 bash "$ROOT/apply.sh" >/dev/null
 
 test "$(git config --get core.hooksPath)" = ".githooks"
 test -f AGENTS.md
 test -f CLAUDE.md
+test -f APPLY.md
+test -f HARNESS.md
+test -f PROFILES.md
+test -f MEMORY.md
+test -f LESSONS.md
+test -f docs/adr/0000-template.md
 test -f .mcp.json
 test -f .codex/config.toml
+grep -q '"context7"' .mcp.json
+grep -q '^\[mcp_servers.context7\]' .codex/config.toml
 test -x tools/apply-profile.sh
 test -x tools/remove-profile.sh
 test -x tools/audit-capabilities.sh
@@ -56,6 +103,10 @@ test -x .claude/hooks/project-scope.sh
 test -x .codex/hooks/project-scope.sh
 grep -q '"custom-claude"' .mcp.json
 grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
+grep -q 'custom-claude' .claude/settings.json
+grep -q 'custom-codex' .codex/hooks.json
+grep -q 'project-scope.sh' .claude/settings.json
+grep -q 'project-scope.sh' .codex/hooks.json
 
 printf '{"tool_input":{"file_path":"%s/AGENTS.md"}}' "$PWD" | .claude/hooks/project-scope.sh
 printf '{"tool_input":{"command":"curl https://example.com"}}' | .codex/hooks/project-scope.sh
@@ -83,7 +134,7 @@ HOME="$TMP/home" tools/remove-profile.sh figma --dry-run >/dev/null
 remove_after="$(cksum .mcp.json .codex/config.toml)"
 test "$remove_before" = "$remove_after"
 HOME="$TMP/home" tools/apply-profile.sh stripe >/dev/null
-HOME="$TMP/home" tools/audit-capabilities.sh --expect-profile all >/dev/null
+HOME="$TMP/home" tools/audit-capabilities.sh --expect-profile all --check-user-resources >/dev/null
 
 python3 -m json.tool .mcp.json >/dev/null
 python3 -m json.tool .codex/hooks.json >/dev/null

@@ -47,6 +47,64 @@ fetch_hooks() {
     fetch "${dir}/hooks/${h}.sh" > "${dir}/hooks/${h}.sh"; chmod +x "${dir}/hooks/${h}.sh"
   done
 }
+merge_json_config() {
+  local src="$1" dst="$2"
+  local tmp
+  tmp=$(mktemp)
+  fetch "$src" > "$tmp"
+  mkdir -p "$(dirname "$dst")"
+  if [ -f "$dst" ]; then
+    cp "$dst" "${dst}.bak"
+    echo "  backed up $dst → ${dst}.bak"
+  fi
+  python3 - "$tmp" "$dst" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+template_path = Path(sys.argv[1])
+target_path = Path(sys.argv[2])
+template = json.loads(template_path.read_text())
+existing = {}
+if target_path.exists() and target_path.read_text().strip():
+    existing = json.loads(target_path.read_text())
+
+merged = dict(existing)
+
+for key, value in template.items():
+    if key not in {"permissions", "hooks"}:
+        merged[key] = value if key not in merged else merged[key]
+
+permissions = dict(existing.get("permissions", {}))
+for kind in ("allow", "deny"):
+    seen = set(permissions.get(kind, []))
+    permissions[kind] = permissions.get(kind, [])
+    for item in template.get("permissions", {}).get(kind, []):
+        if item not in seen:
+            permissions[kind].append(item)
+            seen.add(item)
+if permissions:
+    merged["permissions"] = permissions
+
+hooks = dict(existing.get("hooks", {}))
+for event, blocks in template.get("hooks", {}).items():
+    existing_blocks = hooks.get(event, [])
+    encoded = {json.dumps(block, sort_keys=True) for block in existing_blocks}
+    new_blocks = []
+    for block in blocks:
+        marker = json.dumps(block, sort_keys=True)
+        if marker not in encoded:
+            new_blocks.append(block)
+            encoded.add(marker)
+    hooks[event] = new_blocks + existing_blocks
+if hooks:
+    merged["hooks"] = hooks
+
+target_path.write_text(json.dumps(merged, indent=2) + "\n")
+PY
+  rm -f "$tmp"
+  echo "  wrote $dst"
+}
 
 # ── [1/6] Rules ───────────────────────────────────────────────
 echo "[1/6] Rules..."
@@ -56,6 +114,13 @@ case "$TOOL" in
   all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md" ;;
 esac
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
+fetch_safe "APPLY.md" "APPLY.md"
+fetch_safe "HARNESS.md" "HARNESS.md"
+fetch_safe "PROFILES.md" "PROFILES.md"
+[ -f "MEMORY.md" ] || fetch "MEMORY.md" > MEMORY.md 2>/dev/null || true
+[ -f "LESSONS.md" ] || fetch "LESSONS.md" > LESSONS.md 2>/dev/null || true
+mkdir -p docs/adr
+[ -f "docs/adr/0000-template.md" ] || fetch "docs/adr/0000-template.md" > docs/adr/0000-template.md 2>/dev/null || true
 
 # ── [2/6] Prompts (universal) ─────────────────────────────────
 echo "[2/6] Prompts..."
@@ -123,14 +188,14 @@ setup_claude_runtime() {
   done
   fetch_hooks ".claude"
   fetch_skills ".claude"
-  fetch_safe ".claude/settings.json" ".claude/settings.json"
+  merge_json_config ".claude/settings.json" ".claude/settings.json"
   echo "  Claude project runtime installed (rules+prompts+hooks+skills)."
 }
 
 setup_codex_runtime() {
   fetch_hooks ".codex"
   fetch_skills ".codex"
-  fetch_safe ".codex/hooks.json" ".codex/hooks.json"
+  merge_json_config ".codex/hooks.json" ".codex/hooks.json"
   echo "  Codex project runtime installed (rules+prompts+hooks+skills)."
   echo "  Codex hooks written to .codex/hooks.json and .codex/hooks/."
   echo "  VERIFY hook stdin field names match your Codex version — see HARNESS.md."
@@ -147,14 +212,18 @@ echo "[6/6] CodeGraph (code graph + token saver)..."
 if [ "${SKIP_CODEGRAPH:-0}" = "1" ]; then
   echo "  skipped CodeGraph (SKIP_CODEGRAPH=1)."
 elif command -v codegraph >/dev/null 2>&1; then
-  codegraph install || true
+  if [ "${INSTALL_CODEGRAPH_MCP:-0}" = "1" ]; then
+    codegraph install || true
+  else
+    echo "  skipped CodeGraph MCP wiring (set INSTALL_CODEGRAPH_MCP=1 to opt in)."
+  fi
   codegraph init || true
-  echo "  CodeGraph installed and index built (.codegraph/)."
+  echo "  CodeGraph index built (.codegraph/)."
 else
   echo "  codegraph not found. Manual setup:"
   echo "    curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"
-  echo "    Then in a new terminal: codegraph install   (auto-wires Claude Code + Codex MCP)"
-  echo "    Then: codegraph init                        (builds the local .codegraph/ index)"
+  echo "    Then in a new terminal: codegraph init      (builds the local .codegraph/ index)"
+  echo "    Optional: INSTALL_CODEGRAPH_MCP=1 bash apply.sh to wire machine-level MCP"
   echo "  Optional but recommended: ~-47% tokens / fewer tool calls. 100% local."
 fi
 

@@ -16,7 +16,7 @@ a faster copy for tools that support them.
 | MCP | tool/data servers | ⚠️ same servers, config/path per tool |
 | Git hooks + CI | block secrets, format, gate tests | ✅ any tool or human |
 | Runtime hooks | block dangerous cmds/secrets mid-session | ❌ Claude Code + Codex only |
-| Slash commands | prompts as `/commands` | ❌ Claude Code + Codex only |
+| Slash commands | prompts as `/commands` | ❌ Claude Code only; Codex uses `prompts/` directly |
 | Optional plugins | curated packs | ❌ tool-specific, not base-loaded |
 
 ## Rules file — where your tool reads instructions
@@ -37,7 +37,7 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 python3 tools/gen-mcp.py claude    # → .mcp.json           (root)
 python3 tools/gen-mcp.py codex     # → .codex/config.toml  (TOML)
 ```
-Base servers: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `db` (if `DATABASE_URL` set).
+Base servers: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `context7`, `db` (if `DATABASE_URL` set).
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Supabase, Stripe, Figma) are project-local profiles: `tools/apply-profile.sh <name> [--tool claude|codex|all] [--dry-run]`, and removal is `tools/remove-profile.sh <name>`. Existing custom MCP servers are preserved. Discover other servers live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
 
 ## Runtime hooks — Claude Code & Codex
@@ -66,8 +66,8 @@ This is *why* the harness is model-agnostic on enforcement: the guarantees hold 
 
 ## Code graph + token economy — CodeGraph
 The single biggest token saver: a local, pre-indexed symbol/call/import graph that both Claude Code and Codex query over MCP instead of fanning out grep/read sweeps (~−47% tokens, −58% tool calls; 100% local, no embeddings API).
-- **Install once (per machine):** `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then in a NEW terminal `codegraph install` (auto-wires the MCP into Claude Code + Codex).
-- **Per project:** `codegraph init` builds `.codegraph/` (gitignored) and auto-syncs on edits. `apply.sh`'s CodeGraph step runs both if `codegraph` is on PATH.
+- **Install once (per machine):** `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`.
+- **Per project:** `codegraph init` builds `.codegraph/` (gitignored) and auto-syncs on edits. `apply.sh` runs `codegraph init` if `codegraph` is on PATH. It only runs `codegraph install` when `INSTALL_CODEGRAPH_MCP=1` is set, because that wires machine-level MCP config.
 - **Use it:** `codegraph_search` / `codegraph_explore` to find symbols, callers, and blast radius before reading files; `codegraph_status` to confirm sync. See the **Token economy** rules in `RULES.md`.
 
 ## Skills — lean on purpose

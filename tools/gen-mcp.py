@@ -24,6 +24,7 @@ SERVERS = [
     {"name": "git",        "command": "uvx", "args": ["mcp-server-git", "--repository", "."], "env": None},
     {"name": "playwright", "command": "npx", "args": ["-y", "@playwright/mcp"], "env": None},
     {"name": "sequential-thinking", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"], "env": None},
+    {"name": "context7",   "command": "npx", "args": ["-y", "@upstash/context7-mcp"], "env": None},
 ]
 
 if os.environ.get("DATABASE_URL"):
@@ -70,12 +71,16 @@ def emit_codex():
         lines.append("[mcp_servers.%s]" % s["name"])
         lines.append("command = %s" % json.dumps(s["command"]))
         lines.append("args = %s" % json.dumps(s["args"]))
-        if s["env"]:
+        if s["env"] and s["env_key"] == s["env"]:
             # Forward the named env var from the surrounding shell into the server.
             lines.append('env_vars = ["%s"]' % s["env"])
+        elif s["env"]:
+            lines.append("")
+            lines.append("[mcp_servers.%s.env]" % s["name"])
+            lines.append("%s = %s" % (s["env_key"], json.dumps("$%s" % s["env"])))
         lines.append("")
     os.makedirs(".codex", exist_ok=True)
-    body = "\n".join(lines)
+    body = "\n".join(lines).rstrip()
     path = ".codex/config.toml"
     existing = ""
     if os.path.exists(path):
@@ -93,7 +98,7 @@ def _without_managed_codex_servers(text):
     lines = text.splitlines()
     i = 0
     while i < len(lines):
-        match = re.match(r"\[mcp_servers\.([^\]]+)\]", lines[i])
+        match = re.match(r"\[mcp_servers\.([^\].]+)(?:\.[^\]]+)?\]", lines[i])
         if match and match.group(1) in managed:
             i += 1
             while i < len(lines) and not lines[i].startswith("["):

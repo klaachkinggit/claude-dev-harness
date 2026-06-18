@@ -21,13 +21,13 @@ No curl? `gh repo clone klaachkinggit/klaach_harness /tmp/harness` and copy the 
 | Slash commands | `.claude/commands/` | Claude Code |
 | Runtime hooks | `.claude/hooks/` + `.claude/settings.json` (Claude) / `.codex/hooks/` + `.codex/hooks.json` (Codex) | Claude Code, Codex |
 | Skills | `.claude/skills/` + `.codex/skills/` (mirrored find-skills + front-end design set) | Claude Code, Codex |
-| Code graph | CodeGraph — `codegraph install` + `init` (run by apply.sh if on PATH) | Claude Code, Codex (MCP) |
+| Code graph | CodeGraph — `codegraph init` when installed; machine-level MCP wiring is opt-in with `INSTALL_CODEGRAPH_MCP=1` | Claude Code, Codex (MCP when wired) |
 
 ## After applying — VERIFY (don't skip)
 Setup can fail partially (missing token, network, CLI mismatch). `apply.sh` prints a `⚠️ FAILED` block if so — read it. Then:
 1. **Git hooks:** `git config --get core.hooksPath` → `.githooks`
-2. **MCP** (Claude Code): `claude mcp list` → `github`, `filesystem`, `git`, `playwright` listed. Empty = re-run after setting `GITHUB_TOKEN`.
-3. **Runtime hooks:** `ls .claude/hooks/` and/or `ls .codex/hooks/` → 5 `.sh` files for each enabled provider. Codex: also verify a known-bad command is blocked — see HARNESS.md caveat.
+2. **MCP** (Claude Code): `claude mcp list` → `github`, `filesystem`, `git`, `playwright`, `sequential-thinking`, `context7` listed. Empty = re-run after setting `GITHUB_TOKEN`.
+3. **Runtime hooks:** `ls .claude/hooks/` and/or `ls .codex/hooks/` → 6 `.sh` files for each enabled provider. Codex: also verify a known-bad command is blocked — see HARNESS.md caveat.
 4. **Env:** copy `.env.example` → `.env`, set `GITHUB_TOKEN` (+ `DATABASE_URL` if Postgres).
 5. **Overwrites:** existing config was backed up to `<file>.bak` — merge anything you need.
 
