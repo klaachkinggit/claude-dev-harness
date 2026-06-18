@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Harness integration
-        run: tools/test-harness-integration.sh
+      - name: Harness preflight
+        run: tools/preflight-harness.sh
 
       - name: Detect stack
         id: detect
@@ -39,7 +39,7 @@ jobs:
       - name: Node — install, lint, test
         if: steps.detect.outputs.node == 'true'
         run: |
-          npm ci || npm install
+          npm ci
           npm run lint --if-present
           npm test --if-present
 
@@ -54,6 +54,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           [ -f requirements.txt ] && pip install -r requirements.txt || true
-          pip install ruff pytest || true
-          ruff check . || true
-          pytest -q || echo "no tests or tests failed (non-blocking placeholder — make this blocking per project)"
+          pip install ruff pytest
+          ruff check .
+          pytest -q

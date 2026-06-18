@@ -32,3 +32,8 @@ Append-only log of heuristics learned. Read at session start alongside `MEMORY.m
 - **Saw:** Codex MCP generation preserved custom servers, but Claude `.mcp.json` generation overwrote them.
 - **Why:** Applying a harness mid-project is an adoption path, not a greenfield-only installer.
 - **Next time:** Generated provider config should replace only harness-managed entries and preserve project-owned entries.
+
+## 2026-06-18 — test the installed harness, not just the source repo  [test]
+- **Saw:** Installed CI referenced a harness-only integration script, and shell hook tests missed escaped JSON cases.
+- **Why:** Source-repo checks can pass while applied projects lack the files or payload shape that agents actually use.
+- **Next time:** Every harness feature needs a temp-project assertion using the installed files and valid provider-like JSON payloads.

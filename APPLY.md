@@ -9,7 +9,13 @@ TOOL=<your-tool> bash <(curl -fsSL https://raw.githubusercontent.com/klaachkingg
 ```
 Tool not listed → `TOOL=all`, then read [HARNESS.md](HARNESS.md) to finish wiring it up.
 
-No curl? `gh repo clone klaachkinggit/klaach_harness /tmp/harness` and copy the files you need.
+No curl? Clone outside the project, run the installer from the project root, then remove the clone:
+```bash
+gh repo clone klaachkinggit/klaach_harness /tmp/klaach_harness
+TOOL=<your-tool> HARNESS_RAW_BASE=file:///tmp/klaach_harness bash /tmp/klaach_harness/apply.sh
+rm -rf /tmp/klaach_harness
+```
+Do not leave a `klaach_harness/` folder inside the project.
 
 ## What gets applied
 | Component | Where | Who reads it |
@@ -30,6 +36,8 @@ Setup can fail partially (missing token, network, CLI mismatch). `apply.sh` prin
 3. **Runtime hooks:** `ls .claude/hooks/` and/or `ls .codex/hooks/` → 6 `.sh` files for each enabled provider. Codex: also verify a known-bad command is blocked — see HARNESS.md caveat.
 4. **Env:** copy `.env.example` → `.env`, set `GITHUB_TOKEN` (+ `DATABASE_URL` if Postgres).
 5. **Overwrites:** existing config was backed up to `<file>.bak` — merge anything you need.
+6. **Context:** `tools/check-agent-context.sh --tool all` → confirms the selected agent can see rules, skills, hooks, and MCP config.
+7. **Preflight:** `tools/preflight-harness.sh` → blocking local check for the applied harness.
 
 Then add project-specific rules at the bottom of your rules file (below `<!-- Add project-specific rules below this line -->`):
 ```markdown
@@ -39,3 +47,4 @@ Then add project-specific rules at the bottom of your rules file (below `<!-- Ad
 
 ## Before building
 Per the rules, before a non-trivial feature run `assess-capabilities` (or ask *"what skills/MCP/plugins does this need?"*) — it pulls the right capabilities and skips what the base already covers. See PROFILES.md.
+For large/ambiguous work, use `sequential-thinking`. For version-sensitive library, SDK, framework, or API behavior, use `context7` before relying on memory.

@@ -37,21 +37,21 @@ Same content (`RULES.md`, synced by `sync-rules.sh`); filename + MCP env-var syn
 python3 tools/gen-mcp.py claude    # → .mcp.json           (root)
 python3 tools/gen-mcp.py codex     # → .codex/config.toml  (TOML)
 ```
-Base servers: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `context7`, `db` (if `DATABASE_URL` set).
+Base servers: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `playwright`, `sequential-thinking`, `context7`, `db` (if `DATABASE_URL` set). Agents should use `sequential-thinking` for complex planning/debugging and `context7` for version-sensitive library/API docs.
 Tool not an emitter → translate `.mcp.json` (generic JSON) to your tool's format; adding an emitter is one function in `gen-mcp.py`. Stack-specific servers (Vercel, Supabase, Stripe, Figma) are project-local profiles: `tools/apply-profile.sh <name> [--tool claude|codex|all] [--dry-run]`, and removal is `tools/remove-profile.sh <name>`. Existing custom MCP servers are preserved. Discover other servers live via `registry.modelcontextprotocol.io` / awesome-mcp-servers / mcp.so / Smithery / PulseMCP. Don't re-add the base 5.
 
 ## Runtime hooks — Claude Code & Codex
 Provider-local scripts read the tool-call as JSON on stdin and exit `2` to block.
 - **Claude Code:** wired in `.claude/settings.json`, scripts in `.claude/hooks/`.
 - **Codex:** wired in `.codex/hooks.json`, scripts in `.codex/hooks/`.
-- **⚠️ Codex caveat:** scripts expect `tool_input.command` / `tool_input.file_path`. Codex's schema mirrors Claude's but field names may differ by version — **test with a known-bad command first**; if the field is absent the scripts **fail open** (no block).
+- **Verify:** run `tools/check-agent-context.sh --tool all` after applying, and test one known-bad outside path before trusting a new provider version.
 - **Other tools (no hook system):** no runtime blocking — the git hooks cover the same ground at commit/push.
 
 | Script | Blocks / does |
 |--------|--------------|
-| `project-scope.sh` | direct Read/Write/Edit paths outside the project root, plus common Bash path references outside the project root (`/Users`, `~`, `/etc`, `/tmp`, `../outside`); URLs stay allowed |
-| `block-dangerous.sh` | recursive rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb, mkfs, dd-to-disk; **+ rm/mv/truncate of `.env`/`.env.local` and `git clean -f`** (append `>>`, `cp` restore, and `.env.example` stay allowed) |
-| `protect-secrets.sh` | read/write/edit of `.env`/`.pem`/`.key`/credentials via the file tools; **allows `*.example` templates** |
+| `project-scope.sh` | direct Read/Write/Edit paths outside the project root, common Bash path references outside the project root, symlink escapes, globs, `$HOME`, and uninspectable shell substitution; URLs stay allowed |
+| `block-dangerous.sh` | recursive rm of root/home/cwd, `curl\|sh`, force-push main, fork bomb, mkfs, dd-to-disk; **+ rm/mv/truncate/read of `.env`/keys and `git clean -f`** (append `>>`, `cp` restore, and `.env.example` stay allowed) |
+| `protect-secrets.sh` | read/write/edit of `.env`/`.pem`/`.key`/credentials via the file tools, including symlink aliases; **allows `*.example` templates** |
 | `auto-format.sh` | prettier/black/ruff/gofmt/rustfmt on edited files |
 | `log-bash.sh` | logs commands to provider-local logs (`.claude/bash.log`, `.codex/bash.log`) |
 | `pre-pr-gate.sh` | blocks PR if tests fail |

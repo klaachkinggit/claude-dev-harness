@@ -40,12 +40,59 @@ fetch_safe() {  # fetch src → dst, backing up an existing dst first
   if [ -f "$dst" ]; then cp "$dst" "${dst}.bak"; echo "  backed up $dst → ${dst}.bak"; fi
   fetch "$src" > "$dst"
 }
+fetch_rules() {
+  local src="$1" dst="$2"
+  local tmp
+  tmp=$(mktemp)
+  fetch "$src" > "$tmp"
+  mkdir -p "$(dirname "$dst")"
+  if [ -f "$dst" ]; then
+    cp "$dst" "${dst}.bak"
+    echo "  backed up $dst → ${dst}.bak"
+  fi
+  python3 - "$tmp" "$dst" <<'PY'
+from pathlib import Path
+import sys
+
+template_path = Path(sys.argv[1])
+target_path = Path(sys.argv[2])
+template = template_path.read_text()
+existing = target_path.read_text() if target_path.exists() else ""
+marker = "<!-- Add project-specific rules below this line -->"
+
+if existing and existing != template:
+    tail = ""
+    if marker in existing:
+        tail = existing.split(marker, 1)[1].strip()
+    else:
+        tail = existing.strip()
+    if tail and tail not in template:
+        target_path.write_text(template.rstrip() + "\n\n" + tail.rstrip() + "\n")
+    else:
+        target_path.write_text(template)
+else:
+    target_path.write_text(template)
+PY
+  rm -f "$tmp"
+  echo "  wrote $dst"
+}
 fetch_hooks() {
   local dir="$1"
   mkdir -p "${dir}/hooks"
   for h in project-scope protect-secrets block-dangerous auto-format log-bash pre-pr-gate; do
     fetch "${dir}/hooks/${h}.sh" > "${dir}/hooks/${h}.sh"; chmod +x "${dir}/hooks/${h}.sh"
   done
+}
+fetch_optional() {
+  local src="$1" dst="$2"
+  local tmp
+  tmp=$(mktemp)
+  if fetch "$src" > "$tmp" 2>/dev/null; then
+    mv "$tmp" "$dst"
+  else
+    rm -f "$tmp"
+    return 1
+  fi
 }
 merge_json_config() {
   local src="$1" dst="$2"
@@ -109,16 +156,45 @@ PY
 # ── [1/6] Rules ───────────────────────────────────────────────
 echo "[1/6] Rules..."
 case "$TOOL" in
-  claude)  fetch_safe "CLAUDE.md" "CLAUDE.md" ;;
-  codex)   fetch_safe "AGENTS.md" "AGENTS.md" ;;
-  all|*)   fetch_safe "CLAUDE.md" "CLAUDE.md"; fetch_safe "AGENTS.md" "AGENTS.md" ;;
+  claude)  fetch_rules "CLAUDE.md" "CLAUDE.md" ;;
+  codex)   fetch_rules "AGENTS.md" "AGENTS.md" ;;
+  all|*)   fetch_rules "CLAUDE.md" "CLAUDE.md"; fetch_rules "AGENTS.md" "AGENTS.md" ;;
 esac
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 fetch_safe "APPLY.md" "APPLY.md"
 fetch_safe "HARNESS.md" "HARNESS.md"
 fetch_safe "PROFILES.md" "PROFILES.md"
-[ -f "MEMORY.md" ] || fetch "MEMORY.md" > MEMORY.md 2>/dev/null || true
-[ -f "LESSONS.md" ] || fetch "LESSONS.md" > LESSONS.md 2>/dev/null || true
+[ -f "MEMORY.md" ] || fetch_optional "MEMORY.md" "MEMORY.md" || cat > MEMORY.md <<'EOF'
+# MEMORY.md
+
+Cross-session, append-only project memory. See `prompts/memorize.md` for what goes in and what doesn't.
+
+---
+
+<!-- Append entries below. Format:
+
+## YYYY-MM-DD — short title
+- Fact / decision / constraint.
+- Why it matters (one line). Link: <PR / ADR / doc>.
+
+-->
+EOF
+[ -f "LESSONS.md" ] || fetch_optional "LESSONS.md" "LESSONS.md" || cat > LESSONS.md <<'EOF'
+# LESSONS.md
+
+Append-only log of heuristics learned. Read at session start alongside `MEMORY.md`. See `prompts/learn.md` for what goes in.
+
+---
+
+<!-- Append entries below. Format:
+
+## YYYY-MM-DD — short title  [workflow|debug|test|arch|tools|prompt|cost]
+- **Saw:** what happened (one line).
+- **Why:** the underlying reason it worked / failed.
+- **Next time:** the heuristic future-you will actually re-read.
+
+-->
+EOF
 mkdir -p docs/adr
 [ -f "docs/adr/0000-template.md" ] || fetch "docs/adr/0000-template.md" > docs/adr/0000-template.md 2>/dev/null || true
 
@@ -134,7 +210,7 @@ done
 echo "[3/6] MCP config..."
 mkdir -p tools
 fetch "tools/gen-mcp.py" > tools/gen-mcp.py
-for t in audit-capabilities apply-profile remove-profile; do
+for t in audit-capabilities apply-profile remove-profile check-agent-context check-profile preflight-harness update-harness; do
   fetch "tools/${t}.sh" > "tools/${t}.sh"
   chmod +x "tools/${t}.sh"
 done
@@ -242,6 +318,8 @@ echo "   git config --get core.hooksPath     → should print .githooks"
 echo "   ls .claude/hooks/ 2>/dev/null        → 6 scripts if Claude enabled"
 echo "   ls .codex/hooks/ 2>/dev/null         → 6 scripts if Codex enabled"
 echo "   tools/audit-capabilities.sh          → verify mirrors and local-only resources"
+echo "   tools/check-agent-context.sh         → verify the selected agent can see harness resources"
+echo "   tools/preflight-harness.sh           → blocking local harness preflight"
 if { [ "$TOOL" = "claude" ] || [ "$TOOL" = "all" ]; } && command -v claude >/dev/null 2>&1; then
   echo "   claude mcp list                      → confirm servers (reads .mcp.json)"
 fi

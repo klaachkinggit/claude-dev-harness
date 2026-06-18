@@ -132,6 +132,7 @@ tools/apply-profile.sh stripe
 tools/apply-profile.sh figma
 tools/apply-profile.sh all --dry-run
 tools/audit-capabilities.sh --expect-profile all
+tools/check-profile.sh all
 ```
 
 Remove a profile cleanly:
@@ -167,6 +168,11 @@ Profile auth notes:
 | Linear | Linear MCP | `https://mcp.linear.app/mcp` (OAuth) | ✅ |
 | Jira/Confluence | Atlassian Rovo MCP | `https://mcp.atlassian.com/v1/mcp` (OAuth) | ✅ |
 | Figma | Figma MCP | `tools/apply-profile.sh figma` → `https://mcp.figma.com/mcp` | ✅ |
+
+Run `tools/check-profile.sh <profile|all>` after applying profiles. It verifies
+project-local Claude/Codex config shape, Stripe `STRIPE_SECRET_KEY`, Supabase
+`read_only=true`, and reminds you when hosted OAuth is still a client-side step.
+Use `--strict-auth` when missing local credentials should fail the check.
 
 > Postgres note: the old Anthropic `server-postgres` is **archived/deprecated**
 > (had a SQL-injection case) — stick with the base's `@bytebase/dbhub`.

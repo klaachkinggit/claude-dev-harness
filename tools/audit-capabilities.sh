@@ -18,6 +18,7 @@ Checks:
   - duplicate Codex MCP sections
   - base MCP servers
   - expected optional MCP profiles
+  - installed-project CI does not reference harness-only scripts
   - no user-level skills/resources left in ~/.codex, ~/.claude, or ~/.agents when --check-user-resources is set
 EOF
 }
@@ -76,6 +77,17 @@ check_dir .claude/skills
 check_dir .codex/skills
 check_dir .claude/hooks
 check_dir .codex/hooks
+
+if [ -d klaach_harness ]; then
+  fail "nested klaach_harness directory present"
+else
+  pass "no nested klaach_harness directory"
+fi
+if [ -d .harness-archive ]; then
+  fail ".harness-archive directory present"
+else
+  pass "no .harness-archive directory"
+fi
 
 if python3 -m json.tool .codex/hooks.json >/dev/null 2>&1; then
   pass ".codex/hooks.json is valid JSON"
@@ -173,6 +185,12 @@ else
   pass "skill install guidance is project-local"
 fi
 
+if grep -q "sequential-thinking" AGENTS.md CLAUDE.md && grep -q "context7" AGENTS.md CLAUDE.md; then
+  pass "agent rules mention sequential-thinking and context7"
+else
+  fail "agent rules must mention sequential-thinking and context7"
+fi
+
 prompt_names="$(find prompts -maxdepth 1 -type f -name '*.md' -exec basename {} \; | sort)"
 command_names="$(find .claude/commands -maxdepth 1 -type f -name '*.md' -exec basename {} \; | sort)"
 if [ "$prompt_names" = "$command_names" ]; then
@@ -181,7 +199,9 @@ else
   fail "Claude command wrappers do not match prompts"
 fi
 
-for script in tools/apply-profile.sh tools/remove-profile.sh tools/audit-capabilities.sh; do
+for script in tools/apply-profile.sh tools/remove-profile.sh tools/audit-capabilities.sh \
+              tools/check-agent-context.sh tools/check-profile.sh tools/preflight-harness.sh \
+              tools/update-harness.sh; do
   if bash -n "$script"; then
     pass "$script syntax"
   else
@@ -203,13 +223,19 @@ if [ -f tools/test-harness-integration.sh ]; then
   fi
 fi
 
+if grep -R "tools/test-harness-integration.sh" .github/workflows >/dev/null 2>&1; then
+  fail "installed CI references harness-only integration script"
+else
+  pass "installed CI avoids harness-only integration script"
+fi
+
 if python3 -m py_compile tools/gen-mcp.py >/dev/null 2>&1; then
   pass "tools/gen-mcp.py compiles"
 else
   fail "tools/gen-mcp.py does not compile"
 fi
 
-python3 - "${EXPECTED_PROFILES[@]}" <<'PY'
+python3 - "${EXPECTED_PROFILES[@]-}" <<'PY'
 import json
 import re
 import sys
