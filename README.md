@@ -94,7 +94,7 @@ Append below the `<!-- Add project-specific rules -->` line in your rules file:
 ```
 
 ## Maintaining (harness repo only)
-Edit `RULES.md`, then `./sync-rules.sh` regenerates all tool files (`CLAUDE.md` = `RULES.md` + `.claude-extra.md`). Run it **only here** — in a target project you own the rules files. `apply.sh` backs up overwrites to `<file>.bak`.
+Edit `RULES.md`, then `./sync-rules.sh` regenerates all tool files (`CLAUDE.md` = `RULES.md` + `.claude-extra.md`). Run `./sync-rules.sh --check` to verify generated files are current without mutating them. Run it **only here** — in a target project you own the rules files. `apply.sh` backs up overwrites to `<file>.bak`.
 
 Run `tools/preflight-harness.sh` before changing `apply.sh` or profile tooling. In this repo it also runs `tools/test-harness-integration.sh`, which applies the harness into a temporary git repo from a local `file://` source, preserves pre-existing Claude/Codex custom MCP config and project rules, applies/removes optional MCP profiles, checks dry-run behavior, and runs the capability audit there. CI runs the same blocking preflight on every push and pull request.
 

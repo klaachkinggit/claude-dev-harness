@@ -47,6 +47,11 @@ run_python_compile() {
   return "$status"
 }
 
+run_rules_sync_check() {
+  [ -x sync-rules.sh ] || return 0
+  ./sync-rules.sh --check
+}
+
 run_profile_dry_runs() {
   [ -x tools/apply-profile.sh ] || return 0
   tools/apply-profile.sh all --dry-run >/dev/null
@@ -65,6 +70,7 @@ run_secret_scan() {
 run "shell syntax" run_shell_syntax
 run "JSON syntax" run_json_syntax
 run "Python compile" run_python_compile
+run "rules sync" run_rules_sync_check
 
 if [ -x tools/audit-capabilities.sh ]; then
   run "capability audit" tools/audit-capabilities.sh

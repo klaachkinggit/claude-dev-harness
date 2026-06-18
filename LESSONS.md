@@ -37,3 +37,8 @@ Append-only log of heuristics learned. Read at session start alongside `MEMORY.m
 - **Saw:** Installed CI referenced a harness-only integration script, and shell hook tests missed escaped JSON cases.
 - **Why:** Source-repo checks can pass while applied projects lack the files or payload shape that agents actually use.
 - **Next time:** Every harness feature needs a temp-project assertion using the installed files and valid provider-like JSON payloads.
+
+## 2026-06-18 — source checks stay source-local  [test]
+- **Saw:** Provider rule drift is a source-harness invariant, but applied projects intentionally own their project-specific rule tails.
+- **Why:** Installed-project audits should validate applied behavior; generator parity should be checked before shipping the harness source.
+- **Next time:** Put generation drift checks in source preflight with a check-only mode, not in target-project audits that lack the generator context.
