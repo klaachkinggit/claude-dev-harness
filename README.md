@@ -36,19 +36,20 @@ Base set: `github`, `filesystem`, `git` (`uvx mcp-server-git --repository .`), `
 ### Code graph + token economy (CodeGraph)
 Local symbol/call/import graph that both Claude Code & Codex can query over MCP instead of grep/read sweeps — ~−47% tokens, −58% tool calls, 100% local. Install once: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`, then `codegraph init` per repo (`apply.sh` runs this if `codegraph` is on PATH). Machine-level MCP wiring via `codegraph install` is opt-in with `INSTALL_CODEGRAPH_MCP=1`. Token rules live in `RULES.md` → **Token economy**.
 
-### Profiles (project-local optional MCPs)
-`apply.sh` does not install user-level plugins or skills. Optional stack MCPs are added per project:
+### Profiles (project-local optional capabilities)
+`apply.sh` does not install user-level plugins or skills. Optional stack MCPs and package profiles are added per project:
 
 ```bash
 tools/apply-profile.sh vercel
 tools/apply-profile.sh supabase
 tools/apply-profile.sh stripe
 tools/apply-profile.sh figma
+tools/apply-profile.sh ponytail
 tools/apply-profile.sh all --dry-run
 tools/remove-profile.sh stripe
 ```
 
-Use `tools/audit-capabilities.sh` to verify provider mirrors and MCP config. Add `--check-user-resources` only when you explicitly want it to inspect `~/.codex`, `~/.claude`, and `~/.agents`.
+`ponytail` is a package profile: it adds `ponytail@^1.0.57` to `package.json`; it is not an MCP server. Use `tools/audit-capabilities.sh` to verify provider mirrors and MCP config. Add `--check-user-resources` only when you explicitly want it to inspect `~/.codex`, `~/.claude`, and `~/.agents`.
 
 Useful installed-project checks:
 

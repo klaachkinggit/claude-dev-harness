@@ -133,6 +133,12 @@ HOME="$TMP/home" tools/preflight-harness.sh >/dev/null
 
 printf '{"tool_input":{"file_path":"%s/AGENTS.md"}}' "$PWD" | .claude/hooks/project-scope.sh
 printf '{"tool_input":{"command":"curl https://example.com"}}' | .codex/hooks/project-scope.sh
+mkdir -p local/generated
+printf '{"tool_input":{"command":"touch $(pwd)/local/generated/file.txt"}}' | .codex/hooks/project-scope.sh
+printf '{"tool_input":{"file_path":".env.example"}}' | .claude/hooks/protect-secrets.sh
+printf '{"tool_input":{"command":"cat .env.example"}}' | .codex/hooks/block-dangerous.sh
+printf '{"tool_input":{"command":"printf FOO=bar > .env.example"}}' | .codex/hooks/block-dangerous.sh
+printf '{"tool_input":{"file_path":".codex/hooks/protect-secrets.sh"}}' | .claude/hooks/protect-secrets.sh
 ln -s "$HOME" home-link
 set +e
 printf '{"tool_input":{"file_path":"%s/.ssh/config"}}' "$HOME" | .claude/hooks/project-scope.sh >/dev/null 2>&1
@@ -153,6 +159,8 @@ printf '{"tool_input":{"command":"cat ~/Desktop/*"}}' | .codex/hooks/project-sco
 glob_status=$?
 printf '{"tool_input":{"command":"cat $(pwd)/../outside.txt"}}' | .codex/hooks/project-scope.sh >/dev/null 2>&1
 subshell_status=$?
+printf '{"tool_input":{"command":"cat $(whoami)/file.txt"}}' | .codex/hooks/project-scope.sh >/dev/null 2>&1
+unsafe_subshell_status=$?
 printf '{"tool_input":{"command":"cat home-link/*"}}' | .codex/hooks/project-scope.sh >/dev/null 2>&1
 symlink_glob_status=$?
 set -e
@@ -165,6 +173,7 @@ test "$home_glob_status" -eq 2
 test "$space_path_status" -eq 2
 test "$glob_status" -eq 2
 test "$subshell_status" -eq 2
+test "$unsafe_subshell_status" -eq 2
 test "$symlink_glob_status" -eq 2
 
 printf 'SECRET=1\n' > .env
@@ -184,6 +193,22 @@ test "$bash_env_status" -eq 2
 test "$bash_key_status" -eq 2
 test "$secret_symlink_status" -eq 2
 test "$filepath_alias_status" -eq 2
+
+cat > package.json <<'JSON'
+{
+  "name": "harness-profile-test",
+  "private": true,
+  "dependencies": {
+    "left-pad": "^1.3.0"
+  }
+}
+JSON
+HOME="$TMP/home" tools/apply-profile.sh ponytail >/dev/null
+grep -q '"ponytail": "\^1.0.57"' package.json
+HOME="$TMP/home" tools/check-profile.sh ponytail >/dev/null
+HOME="$TMP/home" tools/remove-profile.sh ponytail >/dev/null
+! grep -q '"ponytail"' package.json
+grep -q '"left-pad": "\^1.3.0"' package.json
 
 HOME="$TMP/home" STRIPE_SECRET_KEY=sk_test_placeholder tools/apply-profile.sh all >/dev/null
 HOME="$TMP/home" STRIPE_SECRET_KEY=sk_test_placeholder tools/check-profile.sh all >/dev/null
