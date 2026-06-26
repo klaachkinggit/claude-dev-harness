@@ -210,6 +210,8 @@ done
 echo "[3/6] MCP config..."
 mkdir -p tools
 fetch "tools/gen-mcp.py" > tools/gen-mcp.py
+fetch "tools/profile.py" > tools/profile.py
+chmod +x tools/profile.py
 for t in audit-capabilities apply-profile remove-profile check-agent-context check-profile preflight-harness update-harness; do
   fetch "tools/${t}.sh" > "tools/${t}.sh"
   chmod +x "tools/${t}.sh"
@@ -308,7 +310,6 @@ echo ""
 echo "=== Done ==="
 echo "Next: copy .env.example → .env (set GITHUB_TOKEN); add project rules at the bottom of your rules file."
 echo "Profiles: add optional stack MCPs with tools/apply-profile.sh vercel|supabase|stripe|figma|all."
-echo "Profiles: add Ponytail package support with tools/apply-profile.sh ponytail."
 echo "Profiles: preview with --dry-run and remove with tools/remove-profile.sh."
 echo "Skills: base is lean and project-local. Need more? Ask agent to 'find a skill for X' or see PROFILES.md."
 echo "Unknown/!listed tool? Read HARNESS.md — it maps every layer to your tool's mechanism."

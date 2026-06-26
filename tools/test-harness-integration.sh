@@ -203,11 +203,6 @@ cat > package.json <<'JSON'
   }
 }
 JSON
-HOME="$TMP/home" tools/apply-profile.sh ponytail >/dev/null
-grep -q '"ponytail": "\^1.0.57"' package.json
-HOME="$TMP/home" tools/check-profile.sh ponytail >/dev/null
-HOME="$TMP/home" tools/remove-profile.sh ponytail >/dev/null
-! grep -q '"ponytail"' package.json
 grep -q '"left-pad": "\^1.3.0"' package.json
 
 HOME="$TMP/home" STRIPE_SECRET_KEY=sk_test_placeholder tools/apply-profile.sh all >/dev/null

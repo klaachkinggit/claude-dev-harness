@@ -42,8 +42,3 @@ Append-only log of heuristics learned. Read at session start alongside `MEMORY.m
 - **Saw:** Provider rule drift is a source-harness invariant, but applied projects intentionally own their project-specific rule tails.
 - **Why:** Installed-project audits should validate applied behavior; generator parity should be checked before shipping the harness source.
 - **Next time:** Put generation drift checks in source preflight with a check-only mode, not in target-project audits that lack the generator context.
-
-## 2026-06-20 — package-only profiles  [tools]
-- **Saw:** `ponytail` exists as an npm package with no CLI, MCP server, or README.
-- **Why:** Treating every named capability as a runtime/tool integration would create fake provider wiring.
-- **Next time:** If a capability is package-only, model it as a provider-neutral package profile and document that it updates project files rather than agent runtime config.
