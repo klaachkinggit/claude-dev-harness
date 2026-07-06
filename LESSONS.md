@@ -1,6 +1,6 @@
 # LESSONS.md
 
-Append-only log of heuristics learned. Read at session start alongside `MEMORY.md`. See `prompts/learn.md` for what goes in.
+Append-only log of heuristics learned. Read at session start alongside `MEMORY.md`.
 
 ---
 
@@ -42,3 +42,8 @@ Append-only log of heuristics learned. Read at session start alongside `MEMORY.m
 - **Saw:** Provider rule drift is a source-harness invariant, but applied projects intentionally own their project-specific rule tails.
 - **Why:** Installed-project audits should validate applied behavior; generator parity should be checked before shipping the harness source.
 - **Next time:** Put generation drift checks in source preflight with a check-only mode, not in target-project audits that lack the generator context.
+
+## 2026-07-06 — source-only files stay out of installed audits  [test]
+- **Saw:** Temp-project preflight failed because the installed audit still ran `bash -n apply.sh`, but applied projects do not receive `apply.sh`.
+- **Why:** Source-repo maintenance files and installed-project harness files have different inventories.
+- **Next time:** Guard source-only checks with file-existence checks, and keep temp-project integration in preflight.

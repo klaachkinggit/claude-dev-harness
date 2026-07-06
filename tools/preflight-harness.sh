@@ -18,9 +18,6 @@ run() {
 run_shell_syntax() {
   local scripts=()
   while IFS= read -r file; do scripts+=("$file"); done < <(find . -path './.git' -prune -o -type f \( -name '*.sh' -o -path './.githooks/*' \) -print)
-  if [ "${#scripts[@]}" -eq 0 ]; then
-    return 0
-  fi
   local status=0
   for script in "${scripts[@]}"; do
     bash -n "$script" || status=1
@@ -29,13 +26,7 @@ run_shell_syntax() {
 }
 
 run_json_syntax() {
-  local status=0
-  for file in .mcp.json .claude/settings.json .codex/hooks.json; do
-    if [ -f "$file" ]; then
-      python3 -m json.tool "$file" >/dev/null || status=1
-    fi
-  done
-  return "$status"
+  python3 -m json.tool .codex/hooks.json >/dev/null
 }
 
 run_python_compile() {
@@ -47,15 +38,9 @@ run_python_compile() {
   return "$status"
 }
 
-run_rules_sync_check() {
-  [ -x sync-rules.sh ] || return 0
-  ./sync-rules.sh --check
-}
-
 run_profile_dry_runs() {
-  [ -x tools/apply-profile.sh ] || return 0
   tools/apply-profile.sh all --dry-run >/dev/null
-  [ -x tools/remove-profile.sh ] && tools/remove-profile.sh all --dry-run >/dev/null
+  tools/remove-profile.sh all --dry-run >/dev/null
 }
 
 run_secret_scan() {
@@ -70,17 +55,9 @@ run_secret_scan() {
 run "shell syntax" run_shell_syntax
 run "JSON syntax" run_json_syntax
 run "Python compile" run_python_compile
-run "rules sync" run_rules_sync_check
-
-if [ -x tools/audit-capabilities.sh ]; then
-  run "capability audit" tools/audit-capabilities.sh
-fi
-if [ -x tools/check-agent-context.sh ]; then
-  run "agent context check" tools/check-agent-context.sh --tool all
-fi
-if [ -x tools/check-profile.sh ]; then
-  run "profile health check" tools/check-profile.sh
-fi
+run "capability audit" tools/audit-capabilities.sh
+run "agent context check" tools/check-agent-context.sh
+run "profile health check" tools/check-profile.sh
 run "profile dry runs" run_profile_dry_runs
 run "secret scan" run_secret_scan
 

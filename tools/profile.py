@@ -17,19 +17,11 @@ def supabase_url():
     return "https://mcp.supabase.com/mcp?" + urlencode(query)
 
 
-def servers():
-    return {
-        "vercel": {"claude": {"type": "http", "url": "https://mcp.vercel.com"}, "codex": {"url": "https://mcp.vercel.com"}},
-        "supabase": {"claude": {"type": "http", "url": supabase_url()}, "codex": {"url": supabase_url()}},
-        "stripe": {
-            "claude": {"type": "stdio", "command": "npx", "args": ["-y", "@stripe/mcp@latest"], "env": {"STRIPE_SECRET_KEY": "$STRIPE_SECRET_KEY"}},
-            "codex": {"command": "npx", "args": ["-y", "@stripe/mcp@latest"], "env_vars": ["STRIPE_SECRET_KEY"]},
-        },
-        "figma": {"claude": {"type": "http", "url": "https://mcp.figma.com/mcp"}, "codex": {"url": "https://mcp.figma.com/mcp"}},
-    }
-
-
-PROFILES = servers()
+PROFILES = {
+    "vercel": {"url": "https://mcp.vercel.com"},
+    "supabase": {"url": supabase_url()},
+    "stripe": {"command": "npx", "args": ["-y", "@stripe/mcp@latest"], "env_vars": ["STRIPE_SECRET_KEY"]},
+}
 KNOWN = sorted(PROFILES)
 
 
@@ -39,15 +31,6 @@ def profile_names(name):
     if name in PROFILES:
         return [name]
     sys.exit("unknown profile: %s\nknown profiles: %s, all" % (name, ", ".join(KNOWN)))
-
-
-def read_claude():
-    path = Path(".mcp.json")
-    if not path.exists() or not path.read_text().strip():
-        return {"mcpServers": {}}
-    cfg = json.loads(path.read_text())
-    cfg.setdefault("mcpServers", {})
-    return cfg
 
 
 def codex_without(names):
@@ -78,68 +61,48 @@ def codex_block(name, entry):
 
 def mutate(args, action):
     names = profile_names(args.profile.lower())
-    if args.tool in ("claude", "all"):
-        cfg = read_claude()
-        for name in names:
-            if action == "apply":
-                cfg["mcpServers"][name] = PROFILES[name]["claude"]
-            else:
-                cfg["mcpServers"].pop(name, None)
-        if args.dry_run:
-            print("DRY RUN .mcp.json")
-            print(json.dumps(cfg, indent=2))
-        else:
-            Path(".mcp.json").write_text(json.dumps(cfg, indent=2) + "\n")
-            print("  wrote .mcp.json")
-    if args.tool in ("codex", "all"):
-        base = codex_without(set(names))
-        blocks = [] if action == "remove" else [codex_block(n, PROFILES[n]["codex"]) for n in names]
-        body = "\n\n".join(part for part in [base, "\n\n".join(blocks)] if part.strip()).rstrip()
-        if args.dry_run:
-            print("DRY RUN .codex/config.toml")
-            print(body)
-        else:
-            Path(".codex").mkdir(exist_ok=True)
-            Path(".codex/config.toml").write_text((body + "\n") if body else "")
-            print("  wrote .codex/config.toml")
+    base = codex_without(set(names))
+    blocks = [] if action == "remove" else [codex_block(name, PROFILES[name]) for name in names]
+    body = "\n\n".join(part for part in [base, "\n\n".join(blocks)] if part.strip()).rstrip()
+    if args.dry_run:
+        print("DRY RUN .codex/config.toml")
+        print(body)
+    else:
+        Path(".codex").mkdir(exist_ok=True)
+        Path(".codex/config.toml").write_text((body + "\n") if body else "")
+        print("  wrote .codex/config.toml")
 
 
 def check(args):
     profile = (args.profile or "").lower()
     if profile and profile not in KNOWN + ["all"]:
         sys.exit("unknown profile: %s\nknown profiles: %s, all" % (profile, ", ".join(KNOWN)))
-    try:
-        claude = read_claude().get("mcpServers", {})
-    except Exception:
-        claude = {}
     codex_text = Path(".codex/config.toml").read_text() if Path(".codex/config.toml").exists() else ""
     codex = set(re.findall(r"^\[mcp_servers\.([^\].]+)\]", codex_text, re.M))
-    expected = set(KNOWN if profile == "all" else [profile] if profile else [n for n in KNOWN if n in claude or n in codex])
+    expected = set(KNOWN if profile == "all" else [profile] if profile else [name for name in KNOWN if name in codex])
     if not expected:
         print("PASS no optional profiles installed\n\nProfile check passed: 0 warning(s)")
         return
+
     failures, warnings, checks = [], [], []
     for name in sorted(expected):
-        missing = False
-        if name not in claude:
-            failures.append("Claude profile missing: " + name)
-            missing = True
         if name not in codex:
             failures.append("Codex profile missing: " + name)
-            missing = True
-        entry = claude.get(name, {})
-        if name == "stripe" and "STRIPE_SECRET_KEY" not in entry.get("env", {}) and "STRIPE_SECRET_KEY" not in os.environ:
+            continue
+        if name == "stripe" and "STRIPE_SECRET_KEY" not in os.environ:
             (failures if args.strict_auth else warnings).append("Stripe profile needs STRIPE_SECRET_KEY in environment before use")
         if name == "supabase":
-            query = parse_qs(urlparse(entry.get("url", "")).query)
+            match = re.search(r"^\[mcp_servers\.supabase\]\n(?P<body>.*?)(?=^\[|\Z)", codex_text, re.M | re.S)
+            url_match = re.search(r'url = "([^"]+)"', match.group("body") if match else "")
+            query = parse_qs(urlparse(url_match.group(1) if url_match else "").query)
             if query.get("read_only", [""])[0] != "true":
                 failures.append("Supabase profile must be read_only=true")
             if "project_ref" not in query:
                 warnings.append("Supabase profile has no project_ref; set SUPABASE_PROJECT_REF before applying when you want one project pinned")
-        if name in {"vercel", "figma"}:
-            checks.append(name.capitalize() + " profile uses hosted OAuth MCP; run the client MCP auth flow if prompted")
-        if not missing:
-            print("PASS profile present in Claude and Codex config: " + name)
+        if name == "vercel":
+            checks.append("Vercel profile uses hosted OAuth MCP; run the client MCP auth flow if prompted")
+        print("PASS profile present in Codex config: " + name)
+
     for item in checks:
         print("CHECK " + item)
     for item in warnings:
@@ -159,7 +122,7 @@ def main():
     for cmd in ("apply", "remove"):
         parser = sub.add_parser(cmd)
         parser.add_argument("profile")
-        parser.add_argument("--tool", choices=("claude", "codex", "all"), default="all")
+        parser.add_argument("--tool", choices=("codex",), default="codex")
         parser.add_argument("--dry-run", action="store_true")
     parser = sub.add_parser("check")
     parser.add_argument("profile", nargs="?")

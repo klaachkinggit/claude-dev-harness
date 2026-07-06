@@ -9,9 +9,6 @@ command = "npx"
 args = ["-y", "@stripe/mcp@latest"]
 env_vars = ["STRIPE_SECRET_KEY"]
 
-[mcp_servers.figma]
-url = "https://mcp.figma.com/mcp"
-
 [mcp_servers.github]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-github"]
