@@ -30,6 +30,7 @@
 - Use the Matt Pocock skills for requirements grilling, TDD, bug diagnosis, issue slicing, codebase design, and architecture improvement.
 - Use `ponytail` for shortest-path implementation and LOC reduction. Follow `.codex/skills/ponytail/SKILL.md`, sourced from `DietrichGebert/ponytail`: YAGNI first, reuse existing code, stdlib/native features before custom code, one line before fifty, and never cut validation, security, accessibility, or required checks.
 - Failing test before implementation on any non-trivial behavior change.
+- Before finishing, run the narrow relevant checks, then `tools/preflight-harness.sh`. After committing verified work, run `tools/finish-harness.sh`; do not call the task finished while it reports a dirty worktree.
 
 ## Memory, Decisions & Learning
 

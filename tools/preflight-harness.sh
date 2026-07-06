@@ -39,8 +39,10 @@ run_python_compile() {
 }
 
 run_profile_dry_runs() {
-  tools/apply-profile.sh all --dry-run >/dev/null
-  tools/remove-profile.sh all --dry-run >/dev/null
+  local status=0
+  tools/apply-profile.sh all --dry-run >/dev/null || status=1
+  tools/remove-profile.sh all --dry-run >/dev/null || status=1
+  return "$status"
 }
 
 run_secret_scan() {
@@ -61,8 +63,12 @@ run "profile health check" tools/check-profile.sh
 run "profile dry runs" run_profile_dry_runs
 run "secret scan" run_secret_scan
 
-if [ -f apply.sh ] && [ -x tools/test-harness-integration.sh ]; then
-  run "temp-project integration" tools/test-harness-integration.sh
+if [ -f apply.sh ]; then
+  if [ -x tools/test-harness-integration.sh ]; then
+    run "temp-project integration" tools/test-harness-integration.sh
+  else
+    run "temp-project integration available" false
+  fi
 fi
 
 printf '\n'

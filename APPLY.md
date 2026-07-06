@@ -26,6 +26,7 @@ Do not leave a `klaach_harness/` folder inside the project.
 | Skills | `.codex/skills/` |
 | Git hooks + CI | `.githooks/`, `.github/workflows/ci.yml` |
 | Harness docs | `README.md`, `HARNESS.md`, `PROFILES.md`, `APPLY.md` |
+| Agent environment map | `docs/agent-work-environment.md` |
 | Memory | `MEMORY.md`, `LESSONS.md`, `docs/adr/0000-template.md` |
 
 ## Verify
@@ -35,8 +36,11 @@ git config --get core.hooksPath
 tools/check-agent-context.sh
 tools/check-profile.sh
 tools/preflight-harness.sh
+tools/finish-harness.sh
 ```
 
 `core.hooksPath` should be `.githooks`.
+
+`tools/finish-harness.sh` is the final handoff gate. It should fail until verified changes are committed and the worktree is clean.
 
 Add project-specific rules below the marker at the bottom of `AGENTS.md`.

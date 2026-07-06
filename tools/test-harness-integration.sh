@@ -64,6 +64,7 @@ test ! -d prompts
 test -f APPLY.md
 test -f HARNESS.md
 test -f PROFILES.md
+test -f docs/agent-work-environment.md
 test -f MEMORY.md
 test -f LESSONS.md
 test -f docs/adr/0000-template.md
@@ -124,6 +125,7 @@ HOME="$TMP/home" HARNESS_RAW_BASE="$RAW_BASE" SKIP_CODEGRAPH=1 bash "$ROOT/apply
 test -f AGENTS.md
 test ! -e CLAUDE.md
 test -x tools/preflight-harness.sh
+test -x tools/finish-harness.sh
 test ! -d klaach_harness
 test ! -d .harness-archive
 HOME="$TMP/home" tools/check-agent-context.sh >/dev/null

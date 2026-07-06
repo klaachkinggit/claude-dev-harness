@@ -105,7 +105,7 @@ rm -rf \
   .codex/skills/matt-pocock-zoom-out
 fetch_rules "AGENTS.md" "AGENTS.md"
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
-for file in APPLY.md HARNESS.md PROFILES.md README.md; do
+for file in APPLY.md HARNESS.md PROFILES.md README.md docs/agent-work-environment.md; do
   fetch_safe "$file" "$file"
 done
 [ -f "MEMORY.md" ] || fetch "MEMORY.md" > MEMORY.md 2>/dev/null || true
@@ -119,7 +119,7 @@ for file in gen-mcp.py profile.py; do
   fetch "tools/${file}" > "tools/${file}"
 done
 chmod +x tools/profile.py
-for tool in audit-capabilities apply-profile remove-profile check-agent-context check-profile preflight-harness update-harness; do
+for tool in audit-capabilities apply-profile remove-profile check-agent-context check-profile preflight-harness finish-harness update-harness; do
   fetch "tools/${tool}.sh" > "tools/${tool}.sh"
   chmod +x "tools/${tool}.sh"
 done
@@ -172,3 +172,4 @@ echo "  git config --get core.hooksPath"
 echo "  tools/check-agent-context.sh"
 echo "  tools/check-profile.sh"
 echo "  tools/preflight-harness.sh"
+echo "  tools/finish-harness.sh"

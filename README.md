@@ -70,6 +70,7 @@ No portable `prompts/` pack is installed.
 - `.githooks/pre-commit`
 - `.githooks/pre-push`
 - `.github/workflows/ci.yml`
+- `tools/finish-harness.sh`
 
 These are the tool-independent safety net for humans and agents.
 
@@ -88,3 +89,13 @@ tools/preflight-harness.sh
 ```
 
 The integration test applies the harness into a temporary project and verifies the Codex-only surface.
+
+Use [docs/agent-work-environment.md](docs/agent-work-environment.md) as the agent-facing ownership map for source files, generated files, ignored local state, and verification scope.
+
+After committing verified work, run the finish gate:
+
+```bash
+tools/finish-harness.sh
+```
+
+It reruns preflight and fails if the Git worktree still has tracked or untracked changes.

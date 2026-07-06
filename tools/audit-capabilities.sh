@@ -43,6 +43,7 @@ check_file .codex/hooks.json
 check_file .codex/hooks/protect-env.sh
 check_file tools/gen-mcp.py
 check_file tools/profile.py
+check_file tools/finish-harness.sh
 
 for path in CLAUDE.md .claude .mcp.json prompts RULES.md sync-rules.sh; do
   check_absent "$path"
@@ -140,7 +141,7 @@ else
   failures=$((failures + 1))
 fi
 
-for script in tools/apply-profile.sh tools/remove-profile.sh tools/audit-capabilities.sh tools/check-agent-context.sh tools/check-profile.sh tools/preflight-harness.sh tools/update-harness.sh; do
+for script in tools/apply-profile.sh tools/remove-profile.sh tools/audit-capabilities.sh tools/check-agent-context.sh tools/check-profile.sh tools/preflight-harness.sh tools/finish-harness.sh tools/update-harness.sh; do
   if bash -n "$script"; then pass "$script syntax"; else fail "$script syntax"; fi
 done
 if [ -f apply.sh ]; then

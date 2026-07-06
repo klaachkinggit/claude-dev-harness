@@ -40,6 +40,8 @@ check_dir .codex/skills
 check_file APPLY.md
 check_file HARNESS.md
 check_file PROFILES.md
+check_file docs/agent-work-environment.md
+check_file tools/finish-harness.sh
 
 check_text AGENTS.md "Foundational Rules (Karpathy)" "AGENTS.md keeps Karpathy rules"
 check_text AGENTS.md "ponytail" "AGENTS.md references Ponytail"

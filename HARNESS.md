@@ -10,6 +10,7 @@
 | Skills | `.codex/skills/` | On-demand workflows and rules |
 | Git + CI | `.githooks/`, `.github/workflows/ci.yml` | Tool-independent enforcement |
 | Memory | `MEMORY.md`, `LESSONS.md`, `docs/adr/` | Durable project context |
+| Agent map | `docs/agent-work-environment.md` | Source ownership, ignored state, verification, finish gate |
 
 ## Codex MCP
 
@@ -69,3 +70,9 @@ bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness
 ```
 
 This harness intentionally does not install Claude Code files or portable prompts.
+
+## Finish Gate
+
+Use `tools/preflight-harness.sh` while work is in progress.
+
+Use `tools/finish-harness.sh` only when work is ready to hand off. It reruns preflight and fails unless `git status --short --untracked-files=all` is clean.
