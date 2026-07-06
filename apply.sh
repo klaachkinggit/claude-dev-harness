@@ -85,6 +85,24 @@ PY
 }
 
 echo "[1/5] Rules and docs..."
+rm -rf .claude prompts .mcp.json CLAUDE.md RULES.md sync-rules.sh .claude-extra.md
+rm -rf \
+  .codex/hooks/auto-format.sh \
+  .codex/hooks/block-dangerous.sh \
+  .codex/hooks/log-bash.sh \
+  .codex/hooks/pre-pr-gate.sh \
+  .codex/hooks/project-scope.sh \
+  .codex/hooks/protect-secrets.sh \
+  .codex/skills/awesome-design-md \
+  .codex/skills/frontend-design \
+  .codex/skills/impeccable \
+  .codex/skills/ui-ux-pro-max \
+  .codex/skills/web-design-guidelines \
+  .codex/skills/matt-pocock-diagnose \
+  .codex/skills/matt-pocock-grill-me \
+  .codex/skills/matt-pocock-tdd \
+  .codex/skills/matt-pocock-to-issues \
+  .codex/skills/matt-pocock-zoom-out
 fetch_rules "AGENTS.md" "AGENTS.md"
 [ -f ".env.example" ] || fetch ".env.example" > .env.example 2>/dev/null || true
 for file in APPLY.md HARNESS.md PROFILES.md README.md; do
@@ -132,7 +150,7 @@ mkdir -p .codex/hooks .codex/skills
 fetch ".codex/hooks/protect-env.sh" > ".codex/hooks/protect-env.sh"
 chmod +x ".codex/hooks/protect-env.sh"
 merge_json_config ".codex/hooks.json" ".codex/hooks.json"
-for skill in find-skills superpowers matt-pocock-grill-me matt-pocock-tdd matt-pocock-diagnose matt-pocock-zoom-out matt-pocock-to-issues ponytail; do
+for skill in find-skills superpowers grill-me tdd diagnosing-bugs to-issues codebase-design improve-codebase-architecture ponytail; do
   mkdir -p ".codex/skills/${skill}"
   fetch ".codex/skills/${skill}/SKILL.md" > ".codex/skills/${skill}/SKILL.md"
 done

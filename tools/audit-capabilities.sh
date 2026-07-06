@@ -64,14 +64,15 @@ failures = []
 expected_skills = {
     "find-skills",
     "superpowers",
-    "matt-pocock-grill-me",
-    "matt-pocock-tdd",
-    "matt-pocock-diagnose",
-    "matt-pocock-zoom-out",
-    "matt-pocock-to-issues",
+    "grill-me",
+    "tdd",
+    "diagnosing-bugs",
+    "to-issues",
+    "codebase-design",
+    "improve-codebase-architecture",
     "ponytail",
 }
-base = {"github", "filesystem", "git", "playwright", "sequential-thinking", "context7"}
+base = {"github", "git", "playwright", "sequential-thinking", "context7"}
 profiles = set()
 for item in sys.argv[1:]:
     if item == "all":
@@ -102,8 +103,9 @@ if dupes:
 for name in sorted(base):
     if name not in codex_set:
         failures.append("Codex base MCP missing: %s" % name)
-if "figma" in codex_set:
-    failures.append("Figma profile should not exist")
+forbidden_mcp = sorted({"filesystem"} & codex_set)
+if forbidden_mcp:
+    failures.append("Codex MCP must not include: %s" % ", ".join(forbidden_mcp))
 if "claude" in text.lower():
     failures.append("Codex config should not reference Claude")
 

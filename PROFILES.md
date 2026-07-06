@@ -10,8 +10,6 @@ The base harness keeps optional stack integrations project-local.
 | Supabase | `https://mcp.supabase.com/mcp?read_only=true` | Hosted OAuth; set `SUPABASE_PROJECT_REF` to pin a project |
 | Stripe | `npx -y @stripe/mcp@latest` | `STRIPE_SECRET_KEY` forwarded from the environment |
 
-Figma is intentionally excluded.
-
 ## Commands
 
 ```bash

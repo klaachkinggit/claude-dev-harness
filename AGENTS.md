@@ -27,7 +27,7 @@
 - Use `sequential-thinking` for complex planning/debugging, multi-step refactors, ambiguous failures, or architecture choices.
 - Use `context7` before relying on memory for version-sensitive library, framework, SDK, CLI, or cloud-service behavior.
 - Use `superpowers` for small to medium implementation workflows that need brainstorm -> plan -> execute structure.
-- Use the Matt Pocock skills for requirements grilling, TDD, diagnosis, system mapping, and issue slicing.
+- Use the Matt Pocock skills for requirements grilling, TDD, bug diagnosis, issue slicing, codebase design, and architecture improvement.
 - Use `ponytail` for shortest-path implementation and LOC reduction. Follow `.codex/skills/ponytail/SKILL.md`, sourced from `DietrichGebert/ponytail`: YAGNI first, reuse existing code, stdlib/native features before custom code, one line before fifty, and never cut validation, security, accessibility, or required checks.
 - Failing test before implementation on any non-trivial behavior change.
 
@@ -55,7 +55,7 @@
 
 - This harness is Codex-only.
 - Codex reads `AGENTS.md`, `.codex/config.toml`, `.codex/hooks.json`, `.codex/hooks/`, and `.codex/skills/`.
-- Do not add Claude Code mirrors, portable prompt packs, or Figma profile support back to the base harness.
+- Do not add Claude Code mirrors or portable prompt packs back to the base harness.
 - Optional MCP profiles are Vercel, Supabase, and Stripe only.
 
 ---

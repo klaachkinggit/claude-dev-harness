@@ -22,7 +22,6 @@ python3 tools/gen-mcp.py codex
 Base servers:
 
 - `github`
-- `filesystem`
 - `git`
 - `playwright`
 - `sequential-thinking`
@@ -53,11 +52,12 @@ Installed by the base harness:
 
 - `find-skills`
 - `superpowers`
-- `matt-pocock-grill-me`
-- `matt-pocock-tdd`
-- `matt-pocock-diagnose`
-- `matt-pocock-zoom-out`
-- `matt-pocock-to-issues`
+- `grill-me`
+- `tdd`
+- `diagnosing-bugs`
+- `to-issues`
+- `codebase-design`
+- `improve-codebase-architecture`
 - `ponytail` from `DietrichGebert/ponytail`
 
 `ponytail` is the shortest-path and LOC-reduction skill. `AGENTS.md` tells Codex to follow `.codex/skills/ponytail/SKILL.md`.
@@ -68,4 +68,4 @@ Installed by the base harness:
 bash <(curl -fsSL https://raw.githubusercontent.com/klaachkinggit/klaach_harness/main/apply.sh)
 ```
 
-This harness intentionally does not install Claude Code files, portable prompts, or Figma support.
+This harness intentionally does not install Claude Code files or portable prompts.

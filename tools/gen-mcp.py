@@ -12,7 +12,6 @@ import sys
 
 SERVERS = [
     {"name": "github", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": "GITHUB_TOKEN", "env_key": "GITHUB_PERSONAL_ACCESS_TOKEN"},
-    {"name": "filesystem", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "."], "env": None},
     {"name": "git", "command": "uvx", "args": ["mcp-server-git", "--repository", "."], "env": None},
     {"name": "playwright", "command": "npx", "args": ["-y", "@playwright/mcp"], "env": None},
     {"name": "sequential-thinking", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"], "env": None},
@@ -55,7 +54,7 @@ def emit_codex():
 
 
 def _without_managed_codex_servers(text):
-    managed = {server["name"] for server in SERVERS}
+    managed = {server["name"] for server in SERVERS} | {"filesystem"}
     kept = []
     lines = text.splitlines()
     i = 0

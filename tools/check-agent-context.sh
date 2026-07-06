@@ -56,14 +56,15 @@ failures = []
 expected_skills = {
     "find-skills",
     "superpowers",
-    "matt-pocock-grill-me",
-    "matt-pocock-tdd",
-    "matt-pocock-diagnose",
-    "matt-pocock-zoom-out",
-    "matt-pocock-to-issues",
+    "grill-me",
+    "tdd",
+    "diagnosing-bugs",
+    "to-issues",
+    "codebase-design",
+    "improve-codebase-architecture",
     "ponytail",
 }
-base_mcp = {"github", "filesystem", "git", "playwright", "sequential-thinking", "context7"}
+base_mcp = {"github", "git", "playwright", "sequential-thinking", "context7"}
 
 got = {item.name for item in Path(".codex/skills").iterdir() if item.is_dir()} if Path(".codex/skills").exists() else set()
 if got != expected_skills:
@@ -84,9 +85,9 @@ servers = set(re.findall(r"^\[mcp_servers\.([^\].]+)\]", text, re.M))
 missing = sorted(base_mcp - servers)
 if missing:
     failures.append("Codex MCP missing: %s" % ", ".join(missing))
-if "figma" in servers:
-    failures.append("Figma profile should not be present")
-
+forbidden = sorted({"filesystem"} & servers)
+if forbidden:
+    failures.append("Codex MCP must not include: %s" % ", ".join(forbidden))
 for skill in sorted(expected_skills):
     path = Path(".codex/skills") / skill / "SKILL.md"
     if not path.exists():

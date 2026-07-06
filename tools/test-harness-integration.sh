@@ -33,10 +33,16 @@ cat > AGENTS.md <<'MD'
 - Keep this Codex project rule.
 MD
 mkdir -p .codex
+mkdir -p .claude prompts .codex/skills/matt-pocock-diagnose .codex/hooks
+touch CLAUDE.md RULES.md sync-rules.sh .mcp.json prompts/old.md .codex/skills/matt-pocock-diagnose/SKILL.md .codex/hooks/project-scope.sh
 cat > .codex/config.toml <<'TOML'
 [mcp_servers.custom-codex]
 command = "custom-command"
 args = ["--custom"]
+
+[mcp_servers.filesystem]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "."]
 TOML
 cat > .codex/hooks.json <<'JSON'
 {
@@ -64,12 +70,11 @@ test -f docs/adr/0000-template.md
 test -f .codex/config.toml
 grep -q '^\[mcp_servers.context7\]' .codex/config.toml
 grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
+! grep -q '^\[mcp_servers.filesystem\]' .codex/config.toml
 test -x .codex/hooks/protect-env.sh
 grep -q 'protect-env.sh' .codex/hooks.json
 ! grep -q 'project-scope.sh' .codex/hooks.json
-! grep -q 'figma' .codex/config.toml
-
-for skill in find-skills superpowers matt-pocock-grill-me matt-pocock-tdd matt-pocock-diagnose matt-pocock-zoom-out matt-pocock-to-issues ponytail; do
+for skill in find-skills superpowers grill-me tdd diagnosing-bugs to-issues codebase-design improve-codebase-architecture ponytail; do
   test -f ".codex/skills/${skill}/SKILL.md"
 done
 test ! -d .codex/skills/frontend-design
@@ -99,7 +104,6 @@ HOME="$TMP/home" STRIPE_SECRET_KEY=sk_test_placeholder tools/check-profile.sh al
 grep -q '^\[mcp_servers.vercel\]' .codex/config.toml
 grep -q '^\[mcp_servers.supabase\]' .codex/config.toml
 grep -q '^\[mcp_servers.stripe\]' .codex/config.toml
-! grep -q '^\[mcp_servers.figma\]' .codex/config.toml
 HOME="$TMP/home" tools/audit-capabilities.sh --expect-profile all >/dev/null
 
 before="$(cksum .codex/config.toml)"
@@ -110,7 +114,7 @@ HOME="$TMP/home" tools/remove-profile.sh stripe >/dev/null
 ! grep -q '^\[mcp_servers.stripe\]' .codex/config.toml
 grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
 HOME="$TMP/home" tools/remove-profile.sh all >/dev/null
-! grep -Eq '^\[mcp_servers\.(vercel|supabase|stripe|figma)\]' .codex/config.toml
+! grep -Eq '^\[mcp_servers\.(vercel|supabase|stripe)\]' .codex/config.toml
 grep -q '^\[mcp_servers.custom-codex\]' .codex/config.toml
 
 mkdir -p "$TMP/no-curl-project"
